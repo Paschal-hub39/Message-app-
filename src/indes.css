@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #111b21;
+  margin: 0;
+  overscroll-behavior-y: contain; /* Prevents browser pull-to-refresh */
+}
+
+/* Custom Scrollbar for the chat */
+main::-webkit-scrollbar {
+  width: 4px;
+}
+main::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+
