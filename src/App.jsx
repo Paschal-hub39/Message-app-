@@ -1,76 +1,91 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { auth, db, googleProvider } from './firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc, query, orderBy, onSnapshot, where, serverTimestamp, getDocs, setDoc, doc } from 'firebase/firestore';
-import { Send, LogOut, MessageSquare, User, Search } from 'lucide-react';
+import { 
+  collection, addDoc, query, where, orderBy, 
+  onSnapshot, serverTimestamp, setDoc, doc 
+} from 'firebase/firestore';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [users, setUsers] = useState([]); // List of all users
-  const [selectedUser, setSelectedUser] = useState(null); // The person you are messaging
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const scroll = useRef();
+  const scrollRef = useRef();
 
-  // 1. Handle Login & Save User to Firestore
+  // 1. Handle Authentication & Sync User to Firestore
   useEffect(() => {
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
-        // Save/Update user in "users" collection so others can find you
-        await setDoc(doc(db, "users", user.uid), {
-          uid: user.uid,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        // Save user to "users" collection so they appear in sidebars
+        await setDoc(doc(db, "users", currentUser.uid), {
+          uid: currentUser.uid,
+          displayName: currentUser.displayName,
+          photoURL: currentUser.photoURL,
           lastSeen: serverTimestamp()
         }, { merge: true });
-      } else {
-        setUser(null);
       }
     });
+    return () => unsubscribe();
   }, []);
 
-  // 2. Fetch all registered users for the Sidebar
+  // 2. Fetch all users for the sidebar
   useEffect(() => {
     if (!user) return;
-    const unsub = onSnapshot(collection(db, "users"), (snapshot) => {
-      setUsers(snapshot.docs.map(doc => doc.data()).filter(u => u.uid !== user.uid));
+    const q = query(collection(db, "users"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setUsers(snapshot.docs.filter(d => d.id !== user.uid).map(d => d.data()));
     });
-    return () => unsub();
+    return () => unsubscribe();
   }, [user]);
 
-  // 3. Fetch Private Messages between You and Selected User
+  // 3. THE FIX: Fetch messages for the SPECIFIC private chat
   useEffect(() => {
-    if (!user || !selectedUser) return;
+    if (!user || !selectedUser) {
+      setMessages([]);
+      return;
+    }
 
-    // Logic: Find messages where (sender=me AND receiver=them) OR (sender=them AND receiver=me)
+    // This logic ensures the ID is ALWAYS the same for both people
+    const combinedId = user.uid > selectedUser.uid 
+      ? `${user.uid}_${selectedUser.uid}` 
+      : `${selectedUser.uid}_${user.uid}`;
+
     const q = query(
       collection(db, "messages"),
-      where("chatId", "in", [
-        `${user.uid}_${selectedUser.uid}`,
-        `${selectedUser.uid}_${user.uid}`
-      ]),
+      where("chatId", "==", combinedId),
       orderBy("createdAt", "asc")
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      scroll.current?.scrollIntoView({ behavior: 'smooth' });
     });
+
     return () => unsubscribe();
-  }, [user, selectedUser]);
+  }, [selectedUser, user]);
+
+  // 4. Auto-scroll to bottom
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedUser) return;
 
+    const combinedId = user.uid > selectedUser.uid 
+      ? `${user.uid}_${selectedUser.uid}` 
+      : `${selectedUser.uid}_${user.uid}`;
+
     await addDoc(collection(db, "messages"), {
       text: newMessage,
       senderId: user.uid,
-      receiverId: selectedUser.uid,
-      chatId: `${user.uid}_${selectedUser.uid}`, // Unique ID for this pair
-      createdAt: serverTimestamp(),
-      senderName: user.displayName
+      receiverId: selectedUser.uid, // Matches your screenshot spelling
+      chatId: combinedId,
+      senderName: user.displayName,
+      createdAt: serverTimestamp()
     });
 
     setNewMessage("");
@@ -78,105 +93,76 @@ function App() {
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-slate-900 text-white p-4">
-        <div className="bg-slate-800 p-8 rounded-3xl shadow-2xl text-center border border-slate-700">
-          <MessageSquare size={60} className="text-green-500 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold mb-2">Paschala Hub</h1>
-          <p className="text-slate-400 mb-6">Real-time Private Messaging</p>
-          <button 
-            onClick={() => signInWithPopup(auth, googleProvider)}
-            className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold transition-all flex items-center gap-2 mx-auto"
-          >
-            Sign in with Google
-          </button>
-        </div>
+      <div className="flex flex-col items-center justify-center h-screen bg-slate-900 text-white">
+        <h1 className="text-4xl font-bold mb-8 text-blue-400">Paschala Hub</h1>
+        <button 
+          onClick={() => signInWithPopup(auth, googleProvider)}
+          className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full font-bold transition-all shadow-lg"
+        >
+          Sign in with Google
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-slate-950 text-white overflow-hidden">
-      {/* SIDEBAR: User List */}
-      <div className={`${selectedUser ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-col border-r border-slate-800 bg-slate-900`}>
-        <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-800/50">
-          <img src={user.photoURL} className="w-10 h-10 rounded-full border-2 border-green-500" alt="me" />
-          <button onClick={() => signOut(auth)} className="text-slate-400 hover:text-red-500 transition-colors">
-            <LogOut size={20} />
-          </button>
+    <div className="flex h-screen bg-[#111b21] text-[#e9edef] overflow-hidden">
+      {/* Sidebar */}
+      <div className="w-1/3 border-r border-[#374045] flex flex-col">
+        <div className="p-4 bg-[#202c33] flex justify-between items-center">
+          <img src={user.photoURL} alt="me" className="w-10 h-10 rounded-full" />
+          <button onClick={() => signOut(auth)} className="text-xs text-red-400 uppercase tracking-widest">Logout</button>
         </div>
-        
-        <div className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 text-slate-500" size={18} />
-            <input type="text" placeholder="Search users..." className="w-full bg-slate-800 rounded-xl py-2 pl-10 pr-4 focus:outline-none border border-slate-700" />
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          <h3 className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Recent Chats</h3>
+        <div className="overflow-y-auto flex-1">
           {users.map(u => (
             <div 
               key={u.uid} 
               onClick={() => setSelectedUser(u)}
-              className={`flex items-center gap-3 p-4 cursor-pointer transition-all hover:bg-slate-800 ${selectedUser?.uid === u.uid ? 'bg-slate-800 border-l-4 border-green-500' : ''}`}
+              className={`p-4 flex items-center gap-3 cursor-pointer border-b border-[#222d34] hover:bg-[#2a3942] ${selectedUser?.uid === u.uid ? 'bg-[#2a3942]' : ''}`}
             >
-              <img src={u.photoURL} className="w-12 h-12 rounded-full" alt={u.displayName} />
-              <div className="flex-1">
-                <p className="font-bold truncate">{u.displayName}</p>
-                <p className="text-xs text-slate-500">Tap to start chatting</p>
+              <img src={u.photoURL} alt="" className="w-12 h-12 rounded-full" />
+              <div>
+                <div className="font-medium text-[#e9edef]">{u.displayName}</div>
+                <div className="text-xs text-[#8696a0]">Online</div>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* CHAT WINDOW */}
-      <div className={`${!selectedUser ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat`}>
+      {/* Chat Window */}
+      <div className="flex-1 flex flex-col bg-[#0b141a]">
         {selectedUser ? (
           <>
-            {/* Header */}
-            <div className="p-4 bg-slate-900/90 backdrop-blur-md flex items-center gap-3 border-b border-slate-800">
-              <button onClick={() => setSelectedUser(null)} className="md:hidden text-slate-400 mr-2">←</button>
-              <img src={selectedUser.photoURL} className="w-10 h-10 rounded-full" alt="peer" />
-              <div>
-                <p className="font-bold">{selectedUser.displayName}</p>
-                <p className="text-xs text-green-500">Online</p>
-              </div>
+            <div className="p-3 bg-[#202c33] flex items-center gap-3">
+              <img src={selectedUser.photoURL} alt="" className="w-10 h-10 rounded-full" />
+              <span className="font-semibold">{selectedUser.displayName}</span>
             </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-950/40">
-              {messages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.senderId === user.uid ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[75%] p-3 rounded-2xl shadow-lg ${
-                    msg.senderId === user.uid 
-                    ? 'bg-green-600 text-white rounded-tr-none' 
-                    : 'bg-slate-800 text-white rounded-tl-none border border-slate-700'
-                  }`}>
-                    <p className="text-sm">{msg.text}</p>
+            <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-opacity-5">
+              {messages.map((m) => (
+                <div key={m.id} className={`flex ${m.senderId === user.uid ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[70%] p-2 rounded-lg shadow-sm ${m.senderId === user.uid ? "bg-[#005c4b] text-white rounded-tr-none" : "bg-[#202c33] text-white rounded-tl-none"}`}>
+                    <p className="text-sm">{m.text}</p>
                   </div>
                 </div>
               ))}
-              <div ref={scroll}></div>
+              <div ref={scrollRef} />
             </div>
 
-            {/* Input */}
-            <form onSubmit={sendMessage} className="p-4 bg-slate-900/90 backdrop-blur-md flex gap-2">
+            <form onSubmit={sendMessage} className="p-3 bg-[#202c33] flex gap-2">
               <input 
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type a message..." 
-                className="flex-1 bg-slate-800 rounded-full px-6 py-3 focus:outline-none border border-slate-700 text-white"
+                placeholder="Type a message"
+                className="flex-1 bg-[#2a3942] border-none outline-none rounded-lg px-4 py-2 text-sm"
               />
-              <button type="submit" className="bg-green-600 p-3 rounded-full hover:bg-green-700 transition-transform active:scale-95 shadow-lg">
-                <Send size={24} />
-              </button>
+              <button className="bg-[#00a884] text-white px-6 py-2 rounded-lg font-bold">Send</button>
             </form>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-slate-500 bg-slate-950/80">
-            <MessageSquare size={80} className="opacity-10 mb-4" />
-            <p className="text-xl">Select a user to start chatting</p>
+          <div className="flex-1 flex items-center justify-center text-[#8696a0]">
+            Select a contact to start chatting
           </div>
         )}
       </div>
