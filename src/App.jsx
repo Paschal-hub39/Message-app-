@@ -7,7 +7,7 @@ import {
 } from 'firebase/firestore';
 import { 
   Send, MessageSquare, Search, User, Check, CheckCheck, X, Smile, Sparkles, 
-  Ghost, Shield, Zap, Gamepad2, Languages, Clock, Wallet, , Smartphone, 
+  Ghost, Shield, Zap, Gamepad2, Languages, Clock, Wallet, Settings, Smartphone, 
   Share2, ChevronRight, Bell, Lock, Palette, LogOut, Info, Heart, Image as ImageIcon,
   Signal, EyeOff, Radio
 } from 'lucide-react';
