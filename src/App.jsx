@@ -6,7 +6,7 @@ import {
   serverTimestamp, setDoc, doc, updateDoc 
 } from 'firebase/firestore';
 import { 
-  Send, MessageSquare, Search, Shield, Zap, Radio, Lock, Smile, Check, CheckCheck 
+  Send, MessageSquare, Search, Shield, Zap, Radio, Lock, Smile, Check, CheckCheck, Image as ImageIcon 
 } from 'lucide-react';
 
 // --- 💎 CONFIG & ENCRYPTION ---
@@ -23,6 +23,20 @@ const decrypt = (encoded) => {
 
 const EMOJI_LIST = ["😂","😎","🥰","😭","🙏","😡","🤣","😌","🤷","😒","💙","😀","😃","😄","😁","😆","😅","😉","😘","😍","😏","😊","🙂","🙃","🥳","🤩","😋","😛","😜","🤪","😔","🥺","🤭","🤫","🤔","🤐","😶","😐","😑","😬","🥱","🤗","😱","🤨","🧐","🙄","😤","😥","😟","🤬","😠","🙁","😕","😰","😨","😧","😦","😮","😫","😣","😖","😳","😲","😯","😵","🥴","🥵","🤢","🥶","🤮","😴","🤑","🤠","😇","🤥","😷","🤕","🤒","🤧","🤓","🤡","💩","😈","👿","👻","💀","👾","👽","⛄","👺","👹","🤖","☠️","🌚","🌞","🌝","💫","⭐","🌟","✨","⚡","💥","💢","🤍","🖤","🤎","💜","💚","💛","🧡","❤️","💘","💝","💖","💗","💓","💞","💕","💌","🗣️","👤","👥","💋","💔","❣️","♥️","💟","👣","💦","🧠","🩸","🦠","🦷","🦴","👀","👍","👎","💪","👏","🙏","💅","🙇","🙋","💁","🙆","🙅","🤷","🤦","🙍","🧘","🛌","🛀","🧖","💇","💆","🧏","🙎","🧍","🤸","🧎","🚶","🏃","🧗","🚵","🚴","🤾","⛹️","🤹","🏌️","🏇","🤺","⛷️","🏂","🪂","🧝","🧞","🧚","🧜","🤽","🏊","🚣","🏄","🧙","🧛","🧟","🦸","🦹","🤶","💂","👸","🕵️","👮","👷","👰","🤵","👼","👶","🧒","🧑","🧓","🧔","👯‍♂️","👯","🕺","💃","🕴️","👫","👭","👬","💏","🤱","🤰","💑","🏵️","💮","🌸","🌷","🌺","🥀","🌹","💐","🌻","🌼","🍂","🍁","🍄","🌾","🌿","🌱","🔥","🌋","🌀","❄️","🌬️","🌊","🏖️","🏝️","🌄","🌅","🌪️","⚡","☔","💧","🌨️","☁️","🌧️","🌞","☀️","🌤️","⛅","🌥️","🌦️","⛈️","🌩️","🌝","🌚","🌜","🌛","🌙","🌌","🌠","🌫️","🌏","🌎","🌍","🪐"];
 
+const GIF_LIST = [
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlUxc2YM1NC6ny8/giphy.gif",
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26AHONh79u4m5W98s/giphy.gif",
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKVUn7iM8FMEU24/giphy.gif",
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l41lTfuxV5F68S96E/giphy.gif",
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYEqEzwMWFCg8rm/giphy.gif",
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKMGpx4gM58u77O/giphy.gif",
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlK9A7uJAXuB_v2/giphy.gif",
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3vRhaxSAsPMEe8yA/giphy.gif",
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKDkDbIDJieKbVm/giphy.gif",
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlS7e4zM0s102wE/giphy.gif"
+  // ... adding more high-quality GIFs in final render
+];
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
@@ -32,7 +46,7 @@ export default function App() {
   const [newMessage, setNewMessage] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [activeTab, setActiveTab] = useState("chats");
-  const [showKbd, setShowKbd] = useState(false);
+  const [keyboardView, setKeyboardView] = useState("none"); // "none", "emoji", "gif"
   const [stealthMode, setStealthMode] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const scroll = useRef();
@@ -84,16 +98,18 @@ export default function App() {
     });
   }, [user, selectedUser]);
 
-  const handleSend = async (val) => {
-    const messageToText = val || newMessage;
-    if (!messageToText.trim() || !selectedUser) return;
+  const handleSend = async (val, type = "text") => {
+    const messageContent = val || newMessage;
+    if (!messageContent.trim() || !selectedUser) return;
     const chatId = user.uid > selectedUser.uid ? `${user.uid}_${selectedUser.uid}` : `${selectedUser.uid}_${user.uid}`;
     await addDoc(collection(db, "messages"), { 
-      text: encrypt(messageToText), type: "text", encrypted: true,
+      text: type === "text" ? encrypt(messageContent) : messageContent, 
+      type, 
+      encrypted: type === "text",
       senderId: user.uid, receiverId: selectedUser.uid, chatId, 
       createdAt: serverTimestamp(), seen: false 
     });
-    setNewMessage(""); setShowKbd(false); setIsTyping(false);
+    setNewMessage(""); setKeyboardView("none"); setIsTyping(false);
   };
 
   const formatTime = (ts) => ts ? new Date(ts.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
@@ -188,7 +204,7 @@ export default function App() {
             {messages.map((m) => (
               <div key={m.id} className={`flex flex-col ${m.senderId === user.uid ? 'items-end' : 'items-start'}`}>
                 <div className={`max-w-[80%] px-4 py-3 rounded-[24px] ${m.senderId === user.uid ? 'bg-green-600 rounded-tr-none' : 'bg-[#11172b] rounded-tl-none border border-white/5'}`}>
-                  <p className="text-[14px] font-medium leading-relaxed">{m.encrypted ? decrypt(m.text) : m.text}</p>
+                  {m.type === "gif" ? <img src={m.text} className="w-40 rounded-xl" /> : <p className="text-[14px] font-medium leading-relaxed">{m.encrypted ? decrypt(m.text) : m.text}</p>}
                 </div>
                 <div className="flex items-center gap-1 mt-1">
                    <span className="text-[7px] text-slate-500 font-black uppercase">{formatTime(m.createdAt)}</span>
@@ -202,14 +218,23 @@ export default function App() {
           </div>
 
           <div className="p-5 bg-[#0d1225] rounded-t-[40px] shadow-[0_-10px_50px_rgba(0,0,0,0.8)]">
-            <div className="bg-[#11172b] p-2 flex gap-2 items-center rounded-full border border-white/5 mb-3">
-              <button onClick={() => setShowKbd(!showKbd)} className="p-2 text-slate-500"><Smile /></button>
-              <input value={newMessage} onFocus={() => setIsTyping(true)} onBlur={() => setIsTyping(false)} onChange={(e) => setNewMessage(e.target.value)} placeholder="Send signal..." className="flex-1 bg-transparent py-3 px-4 outline-none text-sm" />
-              <button onClick={() => handleSend(newMessage)} className="bg-green-600 rounded-full p-3 px-6 shadow-[0_0_20px_#22c55e]"><Send size={18} /></button>
+            <div className="bg-[#11172b] p-2 flex gap-2 items-center rounded-full border border-white/5 mb-3 transition-all">
+              <button onClick={() => setKeyboardView(keyboardView === 'emoji' ? 'none' : 'emoji')} className="p-2 text-slate-500"><Smile /></button>
+              <button onClick={() => setKeyboardView(keyboardView === 'gif' ? 'none' : 'gif')} className="p-2 text-slate-500"><ImageIcon size={20}/></button>
+              <input value={newMessage} onFocus={() => setIsTyping(true)} onBlur={() => setIsTyping(false)} onChange={(e) => setNewMessage(e.target.value)} placeholder="Send signal..." className="flex-1 bg-transparent py-3 px-2 outline-none text-sm" />
+              <button onClick={() => handleSend(newMessage)} className={`bg-green-600 rounded-full flex items-center justify-center shadow-[0_0_20px_#22c55e] transition-all duration-300 ${newMessage.length > 0 ? 'w-24 h-12' : 'w-12 h-12'}`}>
+                <Send size={18} className={newMessage.length > 0 ? "mr-1" : ""} />
+                {newMessage.length > 0 && <span className="text-[10px] font-black uppercase">Send</span>}
+              </button>
             </div>
-            {showKbd && (
+            {keyboardView === 'emoji' && (
               <div className="h-64 overflow-y-auto grid grid-cols-7 gap-y-5 text-center bg-[#0d1225] p-4 rounded-3xl border border-white/5">
                 {EMOJI_LIST.map((emoji, i) => (<button key={i} onClick={() => setNewMessage(prev => prev + emoji)} className="text-3xl active:scale-125 transition-transform">{emoji}</button>))}
+              </div>
+            )}
+            {keyboardView === 'gif' && (
+              <div className="h-64 overflow-y-auto grid grid-cols-2 gap-3 bg-[#0d1225] p-4 rounded-3xl border border-white/5">
+                {GIF_LIST.map((gif, i) => (<img key={i} src={gif} onClick={() => handleSend(gif, "gif")} className="w-full h-24 object-cover rounded-xl active:scale-95 transition-all" />))}
               </div>
             )}
           </div>
