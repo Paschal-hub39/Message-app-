@@ -6,14 +6,13 @@ import {
   serverTimestamp, setDoc, doc, updateDoc 
 } from 'firebase/firestore';
 import { 
-  Send, MessageSquare, Search, User, Check, CheckCheck, X, Smile, Sparkles, 
-  Ghost, Shield, Zap, Gamepad2, Languages, Clock, Wallet, Settings, Smartphone, 
-  Share2, ChevronRight, Bell, Lock, Palette, LogOut, Info, Heart, Image as ImageIcon,
-  Signal, EyeOff, Radio, Phone, Wifi
+  Send, MessageSquare, Search, Shield, Zap, Radio, Lock, Smile, Check, CheckCheck 
 } from 'lucide-react';
 
-// --- 🔐 ENCRYPTION SETUP ---
+// --- 💎 CONFIG & ENCRYPTION ---
+const LOGO_URL = "WA_1775584974117.jpeg";
 const HUB_SECRET_KEY = "VORTEX_SECURE_SIGNAL_992"; 
+
 const encrypt = (text) => btoa(text.split('').map((c, i) => String.fromCharCode(c.charCodeAt(0) ^ HUB_SECRET_KEY.charCodeAt(i % HUB_SECRET_KEY.length))).join(''));
 const decrypt = (encoded) => {
   if (!encoded || typeof encoded !== 'string') return "";
@@ -38,50 +37,39 @@ export default function App() {
   const [isTyping, setIsTyping] = useState(false);
   const scroll = useRef();
 
-  // --- 📱 1. ANDROID BACK BUTTON (STABILIZED) ---
+  // 📱 ANDROID BACK BUTTON 
   useEffect(() => {
     window.history.pushState(null, null, window.location.pathname);
-    const handleBackButton = (e) => {
-      if (selectedUser) {
-        setSelectedUser(null);
-        window.history.pushState(null, null, window.location.pathname);
-      } else if (activeTab !== "chats") {
-        setActiveTab("chats");
-        window.history.pushState(null, null, window.location.pathname);
-      }
+    const handleBack = () => {
+      if (selectedUser) { setSelectedUser(null); window.history.pushState(null, null, window.location.pathname); }
+      else if (activeTab !== "chats") { setActiveTab("chats"); window.history.pushState(null, null, window.location.pathname); }
     };
-    window.addEventListener('popstate', handleBackButton);
-    return () => window.removeEventListener('popstate', handleBackButton);
+    window.addEventListener('popstate', handleBack);
+    return () => window.removeEventListener('popstate', handleBack);
   }, [selectedUser, activeTab]);
 
-  // --- 🛰️ 2. AUTH & IDENTITY ---
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u || null);
-    });
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u || null));
     return () => unsub();
   }, []);
 
   useEffect(() => {
     if (!user) return;
     const userRef = doc(db, "users", user.uid);
-    const unsubUser = onSnapshot(userRef, (doc) => setUserData(doc.data()));
+    onSnapshot(userRef, (doc) => setUserData(doc.data()));
     setDoc(userRef, { 
       status: stealthMode ? "offline" : "online", 
-      signalStrength: stealthMode ? 0 : 3,
       typing: isTyping,
       lastSeen: serverTimestamp(),
       displayName: user.displayName,
       photoURL: user.photoURL,
       uid: user.uid
     }, { merge: true });
-    return () => unsubUser();
   }, [user, stealthMode, isTyping]);
 
   useEffect(() => {
     if (!user) return;
-    const qUsers = query(collection(db, "users"));
-    return onSnapshot(qUsers, (s) => 
+    return onSnapshot(collection(db, "users"), (s) => 
       setUsers(s.docs.map(d => d.data()).filter(u => u.uid !== user.uid))
     );
   }, [user]);
@@ -97,44 +85,39 @@ export default function App() {
   }, [user, selectedUser]);
 
   const handleSend = async (val) => {
-    if (!val.trim() || !selectedUser) return;
+    const messageToText = val || newMessage;
+    if (!messageToText.trim() || !selectedUser) return;
     const chatId = user.uid > selectedUser.uid ? `${user.uid}_${selectedUser.uid}` : `${selectedUser.uid}_${user.uid}`;
     await addDoc(collection(db, "messages"), { 
-      text: encrypt(val), type: "text", encrypted: true,
+      text: encrypt(messageToText), type: "text", encrypted: true,
       senderId: user.uid, receiverId: selectedUser.uid, chatId, 
       createdAt: serverTimestamp(), seen: false 
     });
     setNewMessage(""); setShowKbd(false); setIsTyping(false);
   };
 
-  const savePhone = async () => {
-    if (!phoneInput || !user) return;
-    await updateDoc(doc(db, "users", user.uid), { phoneNumber: phoneInput });
-    alert("Identity Linked!");
-  };
-
   const formatTime = (ts) => ts ? new Date(ts.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
   if (!user) return (
-    <div className="h-screen bg-[#060a16] flex flex-col items-center justify-center p-10 text-white">
-      <Zap size={60} className="text-green-500 mb-6 animate-pulse" />
-      <h1 className="text-4xl font-black italic tracking-tighter uppercase">VORTEX</h1>
-      <button onClick={() => signInWithPopup(auth, googleProvider)} className="w-full mt-10 bg-white text-black py-5 rounded-[25px] font-black uppercase tracking-widest">Connect Hub</button>
+    <div className="h-screen bg-[#060a16] flex flex-col items-center justify-center p-10 text-white text-center">
+      <img src={LOGO_URL} className="w-32 h-32 rounded-[40px] mb-8 shadow-2xl shadow-green-500/20" alt="Logo" />
+      <h1 className="text-5xl font-black italic tracking-tighter uppercase mb-2">VORTEX</h1>
+      <p className="text-[10px] font-black text-green-500 tracking-[4px] uppercase opacity-60">Transmission Stable</p>
+      <button onClick={() => signInWithPopup(auth, googleProvider)} className="w-full mt-12 bg-white text-black py-5 rounded-[25px] font-black uppercase tracking-widest shadow-xl">Connect Hub</button>
     </div>
   );
 
   return (
     <div className="fixed inset-0 bg-[#060a16] text-white flex flex-col overflow-hidden">
       
-      {/* 🟢 MAIN LIST */}
       {!selectedUser && activeTab === "chats" && (
         <div className="flex-1 flex flex-col overflow-hidden">
           <header className="p-8 flex justify-between items-center bg-[#0d1225]">
             <div>
               <h2 className="text-4xl font-black italic tracking-tighter uppercase">VORTEX</h2>
-              <p className="text-[8px] font-black text-green-500 tracking-widest mt-1 uppercase">Transmission Stable</p>
+              <p className="text-[8px] font-black text-green-500 tracking-widest mt-1 uppercase">Signal Active</p>
             </div>
-            <div className="w-14 h-14 rounded-2xl border border-white/10 bg-[#11172b] flex items-center justify-center">
+            <div className="w-14 h-14 rounded-2xl border border-white/10 bg-[#11172b] flex items-center justify-center relative">
                <Radio size={28} className="text-green-500 animate-pulse" />
             </div>
           </header>
@@ -152,7 +135,9 @@ export default function App() {
                 <img src={u.photoURL} className="w-14 h-14 rounded-2xl object-cover" />
                 <div className="flex-1">
                   <p className="font-black text-[15px]">{u.displayName}</p>
-                  <p className={`text-[9px] font-black uppercase tracking-widest ${u.status === 'online' ? 'text-green-500' : 'text-slate-500'}`}>{u.status === 'online' ? 'Active' : 'Offline'}</p>
+                  <p className={`text-[9px] font-black uppercase tracking-widest ${u.status === 'online' ? 'text-green-500' : 'text-slate-500'}`}>
+                    {u.status === 'online' ? 'Active' : `Last seen: ${formatTime(u.lastSeen)}`}
+                  </p>
                 </div>
               </div>
             ))}
@@ -160,41 +145,42 @@ export default function App() {
         </div>
       )}
 
-      {/* 🟢 SYSTEM SETTINGS */}
       {activeTab === "settings" && !selectedUser && (
         <div className="flex-1 flex flex-col p-8 overflow-y-auto pb-32">
-           <header className="flex flex-col items-center mb-10">
+           <header className="flex flex-col items-center mb-10 text-center">
               <img src={user.photoURL} className="w-24 h-24 rounded-[35px] border-4 border-green-500/20 mb-4" />
               <h2 className="text-2xl font-black italic tracking-tighter uppercase">{user.displayName}</h2>
-              <p className="text-[9px] font-black text-green-500 tracking-widest uppercase">{userData?.phoneNumber || "UNLINKED"}</p>
+              <p className="text-[9px] font-black text-green-500 tracking-widest uppercase">{userData?.phoneNumber || "NO IDENTITY LINKED"}</p>
            </header>
-           
            <div className="space-y-6">
               <div className="p-6 bg-[#11172b] rounded-[30px] border border-white/5">
-                <p className="text-[10px] font-black text-slate-500 uppercase mb-4 text-center">Identity Sync</p>
+                <p className="text-[10px] font-black text-slate-500 uppercase mb-4 text-center tracking-[2px]">Identity Link</p>
                 <div className="flex gap-2">
                   <input value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)} placeholder="+234..." className="bg-[#060a16] rounded-2xl p-3 border border-white/10 text-xs flex-1 outline-none" />
-                  <button onClick={savePhone} className="bg-green-600 p-3 rounded-2xl font-black text-[10px] uppercase">Link</button>
+                  <button onClick={() => updateDoc(doc(db, "users", user.uid), { phoneNumber: phoneInput })} className="bg-green-600 p-3 rounded-2xl font-black text-[10px] uppercase">Link</button>
                 </div>
               </div>
               <button onClick={() => setStealthMode(!stealthMode)} className="p-6 w-full rounded-[30px] border border-white/5 bg-[#11172b] flex justify-between items-center">
                  <p className="font-black text-xs uppercase">Stealth Mode</p>
-                 <div className={`w-10 h-5 rounded-full ${stealthMode ? 'bg-green-500' : 'bg-slate-800'}`}></div>
+                 <div className={`w-10 h-5 rounded-full relative ${stealthMode ? 'bg-green-500' : 'bg-slate-800'}`}>
+                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${stealthMode ? 'right-0.5' : 'left-0.5'}`}></div>
+                 </div>
               </button>
-              <button onClick={() => signOut(auth)} className="w-full p-6 rounded-[30px] bg-red-500/10 text-red-500 font-black uppercase text-xs">Terminate</button>
+              <button onClick={() => signOut(auth)} className="w-full p-6 rounded-[30px] bg-red-500/10 text-red-500 font-black uppercase text-xs border border-red-500/10">Terminate Signal</button>
            </div>
         </div>
       )}
 
-      {/* 🟢 CHAT INTERFACE */}
       {selectedUser && (
         <div className="fixed inset-0 z-50 bg-[#060a16] flex flex-col">
           <header className="p-4 flex items-center gap-4 border-b border-white/5 bg-[#0d1225]">
-            <button onClick={() => setSelectedUser(null)} className="p-2 text-green-500 font-black">←</button>
+            <button onClick={() => setSelectedUser(null)} className="p-2 text-green-500 font-black text-xl">←</button>
             <img src={selectedUser.photoURL} className="w-10 h-10 rounded-xl" />
             <div className="flex-1">
               <h4 className="font-black text-[13px] uppercase truncate">{selectedUser.displayName}</h4>
-              <p className="text-[8px] font-black text-green-500 uppercase tracking-widest">SECURED 🔒</p>
+              <p className="text-[8px] font-black text-green-500 uppercase tracking-widest">
+                {selectedUser.typing ? 'Typing Signal...' : 'ENCRYPTED SIGNAL 🔒'}
+              </p>
             </div>
           </header>
 
@@ -202,30 +188,34 @@ export default function App() {
             {messages.map((m) => (
               <div key={m.id} className={`flex flex-col ${m.senderId === user.uid ? 'items-end' : 'items-start'}`}>
                 <div className={`max-w-[80%] px-4 py-3 rounded-[24px] ${m.senderId === user.uid ? 'bg-green-600 rounded-tr-none' : 'bg-[#11172b] rounded-tl-none border border-white/5'}`}>
-                  <p className="text-[14px] font-medium">{m.encrypted ? decrypt(m.text) : m.text}</p>
+                  <p className="text-[14px] font-medium leading-relaxed">{m.encrypted ? decrypt(m.text) : m.text}</p>
                 </div>
-                <span className="text-[7px] text-slate-500 font-black mt-1 uppercase">{formatTime(m.createdAt)}</span>
+                <div className="flex items-center gap-1 mt-1">
+                   <span className="text-[7px] text-slate-500 font-black uppercase">{formatTime(m.createdAt)}</span>
+                   {m.senderId === user.uid && (
+                     m.seen ? <CheckCheck size={10} className="text-green-500" /> : <Check size={10} className="text-slate-500" />
+                   )}
+                </div>
               </div>
             ))}
             <div ref={scroll}></div>
           </div>
 
-          <div className="p-5 bg-[#0d1225] rounded-t-[40px]">
+          <div className="p-5 bg-[#0d1225] rounded-t-[40px] shadow-[0_-10px_50px_rgba(0,0,0,0.8)]">
             <div className="bg-[#11172b] p-2 flex gap-2 items-center rounded-full border border-white/5 mb-3">
               <button onClick={() => setShowKbd(!showKbd)} className="p-2 text-slate-500"><Smile /></button>
-              <input value={newMessage} onFocus={() => setIsTyping(true)} onBlur={() => setIsTyping(false)} onChange={(e) => setNewMessage(e.target.value)} placeholder="Send signal..." className="flex-1 bg-transparent py-3 outline-none text-sm" />
-              <button onClick={() => handleSend(newMessage)} className="bg-green-600 rounded-full p-3 px-6"><Send size={18} /></button>
+              <input value={newMessage} onFocus={() => setIsTyping(true)} onBlur={() => setIsTyping(false)} onChange={(e) => setNewMessage(e.target.value)} placeholder="Send signal..." className="flex-1 bg-transparent py-3 px-4 outline-none text-sm" />
+              <button onClick={() => handleSend(newMessage)} className="bg-green-600 rounded-full p-3 px-6 shadow-[0_0_20px_#22c55e]"><Send size={18} /></button>
             </div>
             {showKbd && (
-              <div className="h-64 overflow-y-auto grid grid-cols-7 gap-y-5 text-center">
-                {EMOJI_LIST.map((emoji, i) => (<button key={i} onClick={() => setNewMessage(prev => prev + emoji)} className="text-3xl">{emoji}</button>))}
+              <div className="h-64 overflow-y-auto grid grid-cols-7 gap-y-5 text-center bg-[#0d1225] p-4 rounded-3xl border border-white/5">
+                {EMOJI_LIST.map((emoji, i) => (<button key={i} onClick={() => setNewMessage(prev => prev + emoji)} className="text-3xl active:scale-125 transition-transform">{emoji}</button>))}
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* 🟢 BOTTOM NAVIGATION */}
       {!selectedUser && (
         <nav className="p-4 px-12 bg-[#0d1225] flex justify-between border-t border-white/5 pb-10">
           <button onClick={() => setActiveTab("chats")} className={`flex flex-col items-center gap-1.5 ${activeTab === 'chats' ? 'text-green-500' : 'text-slate-600'}`}>
