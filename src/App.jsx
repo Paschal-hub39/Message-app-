@@ -34,7 +34,6 @@ const GIF_LIST = [
   "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3vRhaxSAsPMEe8yA/giphy.gif",
   "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKDkDbIDJieKbVm/giphy.gif",
   "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlS7e4zM0s102wE/giphy.gif"
-  // ... adding more high-quality GIFs in final render
 ];
 
 export default function App() {
@@ -46,12 +45,11 @@ export default function App() {
   const [newMessage, setNewMessage] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [activeTab, setActiveTab] = useState("chats");
-  const [keyboardView, setKeyboardView] = useState("none"); // "none", "emoji", "gif"
+  const [keyboardView, setKeyboardView] = useState("none"); 
   const [stealthMode, setStealthMode] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const scroll = useRef();
 
-  // 📱 ANDROID BACK BUTTON 
   useEffect(() => {
     window.history.pushState(null, null, window.location.pathname);
     const handleBack = () => {
@@ -218,13 +216,23 @@ export default function App() {
           </div>
 
           <div className="p-5 bg-[#0d1225] rounded-t-[40px] shadow-[0_-10px_50px_rgba(0,0,0,0.8)]">
-            <div className="bg-[#11172b] p-2 flex gap-2 items-center rounded-full border border-white/5 mb-3 transition-all">
-              <button onClick={() => setKeyboardView(keyboardView === 'emoji' ? 'none' : 'emoji')} className="p-2 text-slate-500"><Smile /></button>
-              <button onClick={() => setKeyboardView(keyboardView === 'gif' ? 'none' : 'gif')} className="p-2 text-slate-500"><ImageIcon size={20}/></button>
-              <input value={newMessage} onFocus={() => setIsTyping(true)} onBlur={() => setIsTyping(false)} onChange={(e) => setNewMessage(e.target.value)} placeholder="Send signal..." className="flex-1 bg-transparent py-3 px-2 outline-none text-sm" />
-              <button onClick={() => handleSend(newMessage)} className={`bg-green-600 rounded-full flex items-center justify-center shadow-[0_0_20px_#22c55e] transition-all duration-300 ${newMessage.length > 0 ? 'w-24 h-12' : 'w-12 h-12'}`}>
-                <Send size={18} className={newMessage.length > 0 ? "mr-1" : ""} />
-                {newMessage.length > 0 && <span className="text-[10px] font-black uppercase">Send</span>}
+            <div className="bg-[#11172b] p-2 flex gap-2 items-center rounded-full border border-white/5 mb-3 transition-all duration-300">
+              <button onClick={() => setKeyboardView(keyboardView === 'emoji' ? 'none' : 'emoji')} className="p-2 text-slate-500"><Smile size={22} /></button>
+              <button onClick={() => setKeyboardView(keyboardView === 'gif' ? 'none' : 'gif')} className="p-2 text-slate-500"><ImageIcon size={22} /></button>
+              <input value={newMessage} onFocus={() => setIsTyping(true)} onBlur={() => setIsTyping(false)} onChange={(e) => setNewMessage(e.target.value)} placeholder="Send signal..." className="flex-1 bg-transparent py-3 px-2 outline-none text-sm placeholder:text-slate-600" />
+              <button 
+                onClick={() => handleSend(newMessage)} 
+                disabled={!newMessage.trim()}
+                className={`
+                  flex items-center justify-center transition-all duration-500 ease-out rounded-full
+                  ${newMessage.trim().length > 0 
+                    ? 'w-28 h-12 bg-green-600 shadow-[0_0_25px_rgba(34,197,94,0.6)]' 
+                    : 'w-12 h-12 bg-[#1a2238] shadow-none'
+                  }
+                `}
+              >
+                <Send size={20} className={`transition-transform duration-300 ${newMessage.trim().length > 0 ? 'mr-2 rotate-12' : 'rotate-0 text-slate-500'}`} />
+                {newMessage.trim().length > 0 && <span className="text-[11px] font-black uppercase tracking-tighter">Send</span>}
               </button>
             </div>
             {keyboardView === 'emoji' && (
