@@ -6,7 +6,7 @@ import {
   serverTimestamp, setDoc, doc, updateDoc, limit 
 } from 'firebase/firestore';
 import { 
-  Send, MessageSquare, Search, Shield, Zap, Radio, Lock, Smile, Check, CheckCheck, 
+  Send, MessageSquare, Search, Shield, Zap, Radio, Lock, Smile, Check,  
   Image as ImageIcon, Phone, Global, TrendingUp, DollarSign, EyeOff
 } from 'lucide-react';
 
