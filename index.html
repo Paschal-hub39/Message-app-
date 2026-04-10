@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/jpeg" href="/WA_1775584974117.jpeg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Paschala Hub</title>
+    
+    <title>Vortex Private Messaging</title>
 
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0b141a" />
@@ -14,14 +15,17 @@
   </head>
   <body>
     <div id="root"></div>
+    
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    
     <script type="module" src="/src/main.jsx"></script>
 
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('Service Worker Registered'))
-            .catch(err => console.log('Service Worker Failed', err));
+            .then(reg => console.log('Vortex Service Worker Active'))
+            .catch(err => console.log('Signal Failed', err));
         });
       }
     </script>
