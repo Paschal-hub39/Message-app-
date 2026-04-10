@@ -6,7 +6,7 @@ import {
   serverTimestamp, setDoc, doc, updateDoc 
 } from 'firebase/firestore';
 import { 
-  Send, MessageSquare, Search, Shield, Zap, Radio, Lock, Smile, Check, CheckCheck, Image as ImageIcon 
+  Send, MessageSquare, Search, Shield, Zap, Radio, Lock, Smile, Check, CheckCheck, Image as ImageIcon, Phone
 } from 'lucide-react';
 
 // --- 💎 CONFIG & ENCRYPTION ---
@@ -21,7 +21,7 @@ const decrypt = (encoded) => {
   } catch (e) { return "🔓 [Secure Signal]"; }
 };
 
-const EMOJI_LIST = ["😂","😎","🥰","😭","🙏","😡","🤣","😌","🤷","😒","💙","😀","😃","😄","😁","😆","😅","😉","😘","😍","😏","😊","🙂","🙃","🥳","🤩","😋","😛","😜","🤪","😔","🥺","🤭","🤫","🤔","🤐","😶","😐","😑","😬","🥱","🤗","😱","🤨","🧐","🙄","😤","😥","😟","🤬","😠","🙁","😕","😰","😨","😧","😦","😮","😫","😣","😖","😳","😲","😯","😵","🥴","🥵","🤢","🥶","🤮","😴","🤑","🤠","😇","🤥","😷","🤕","🤒","🤧","🤓","🤡","💩","😈","👿","👻","💀","👾","👽","⛄","👺","👹","🤖","☠️","🌚","🌞","🌝","💫","⭐","🌟","✨","⚡","💥","💢","🤍","🖤","🤎","💜","💚","💛","🧡","❤️","💘","💝","💖","💗","💓","💞","💕","💌","🗣️","👤","👥","💋","💔","❣️","♥️","💟","👣","💦","🧠","🩸","🦠","🦷","🦴","👀","👍","👎","💪","👏","🙏","💅","🙇","🙋","💁","🙆","🙅","🤷","🤦","🙍","🧘","🛌","🛀","🧖","💇","💆","🧏","🙎","🧍","🤸","🧎","🚶","🏃","🧗","🚵","🚴","🤾","⛹️","🤹","🏌️","🏇","🤺","⛷️","🏂","🪂","🧝","🧞","🧚","🧜","🤽","🏊","🚣","🏄","🧙","🧛","🧟","🦸","🦹","🤶","💂","👸","🕵️","👮","👷","👰","🤵","👼","👶","🧒","🧑","🧓","🧔","👯‍♂️","👯","🕺","💃","🕴️","👫","👭","👬","💏","🤱","🤰","💑","🏵️","💮","🌸","🌷","🌺","🥀","🌹","💐","🌻","🌼","🍂","🍁","🍄","🌾","🌿","🌱","🔥","🌋","🌀","❄️","🌬️","🌊","🏖️","🏝️","🌄","🌅","🌪️","⚡","☔","💧","🌨️","☁️","🌧️","🌞","☀️","🌤️","⛅","🌥️","🌦️","⛈️","🌩️","🌝","🌚","🌜","🌛","🌙","🌌","🌠","🌫️","🌏","🌎","🌍","🪐"];
+const EMOJI_LIST = ["😂","😎","🥰","😭","🙏","😡","🤣","😌","🤷","😒","💙","😀","😃","😄","😁","😆","😅","😉","😘","😍","😏","😊","🙂","🙃","🥳","🤩","😋","😛","😜","🤪","😔","🥺","🤭","🤫","🤔","🤐","😶","😐","😑","😬","🥱","🤗","😱","🤨","🧐","🙄","😤","😥","😟","🤬","😠","🙁","😕","😰","😨","😧","😦","😮","😫","😣","😖","😳","😲","😯","😵","🥴","🥵","🤢","🥶","🤮","😴","🤑","🤠","😇","🤥","😷","🤕","🤒","🤧","🤓","🤡","💩","😈","👿","👻","💀","👾","👽","⛄","👺","👹","🤖","☠️","🌚","🌞","🌝","💫","⭐","🌟","✨","⚡","💥","💢","🤍","🖤","🤎","💜","💚","💛","🧡","❤️","💘","💝","💖","💗","💓","💞","💕","💌","🗣️","👤","👥","💋","💔","❣️","♥️","💟","👣","💦","🧠","🩸","🦠","🦷","🦴","👀","👍","👎","💪","👏","🙏","💅","🙇","🙋","💁","🙆","🙅","🤷","🤦","🙍","🧘","🛌","🛀","🧖","💇","💆","🧏","🙎","🧍","🤸","🧎","🚶","🏃","🧗","🚵","🚴","🤾","⛹️","🤹","🏌️","🏇","🤺","⛷️","🏂","🪂","🧝","🧞","🧚","🧜","🤽","🏊","🚣","🏄","🧙","🧛","🧟","🦸","🦹","🤶","💂","👸","🕵️","👮","👷","👰","🤵","👼","👶","🧒","🧑","🧓","🧔","👯‍♂️","👯","🕺","💃","🕴️","👫","👭","👬","💏","🤱","🤰","💑","🏵️","💮","🌸","🌷","🌺","🥀","🌹","💐","🌻","🌼","🍂","🍁","🍄","🌾","🌿","🌱","🔥","VOLCANO","🌀","❄️","🌬️","🌊","🏖️","🏝️","🌄","🌅","🌪️","⚡","☔","💧","🌨️","☁️","🌧️","🌞","☀️","🌤️","⛅","🌥️","🌦️","⛈️","🌩️","🌝","🌚","🌜","🌛","🌙","🌌","🌠","🌫️","🌏","🌎","🌍","🪐"];
 
 const GIF_LIST = [
   "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlUxc2YM1NC6ny8/giphy.gif",
@@ -48,6 +48,7 @@ export default function App() {
   const [keyboardView, setKeyboardView] = useState("none"); 
   const [stealthMode, setStealthMode] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const scroll = useRef();
 
   useEffect(() => {
@@ -68,7 +69,11 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
     const userRef = doc(db, "users", user.uid);
-    onSnapshot(userRef, (doc) => setUserData(doc.data()));
+    onSnapshot(userRef, (doc) => {
+      const data = doc.data();
+      setUserData(data);
+      if (data?.phoneNumber && !phoneInput) setPhoneInput(data.phoneNumber);
+    });
     setDoc(userRef, { 
       status: stealthMode ? "offline" : "online", 
       typing: isTyping,
@@ -96,6 +101,16 @@ export default function App() {
     });
   }, [user, selectedUser]);
 
+  const handleLinkPhone = async () => {
+    if (!phoneInput.trim() || phoneInput.length < 10) return;
+    const userRef = doc(db, "users", user.uid);
+    await updateDoc(userRef, { 
+      phoneNumber: phoneInput,
+      searchIndex: phoneInput.replace(/\s+/g, '') // Remove spaces for searchability
+    });
+    alert("Identity Linked Successfully 🔒");
+  };
+
   const handleSend = async (val, type = "text") => {
     const messageContent = val || newMessage;
     if (!messageContent.trim() || !selectedUser) return;
@@ -111,6 +126,12 @@ export default function App() {
   };
 
   const formatTime = (ts) => ts ? new Date(ts.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+  // Filter users by name or phone number
+  const filteredUsers = users.filter(u => 
+    u.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    u.phoneNumber?.includes(searchQuery)
+  );
 
   if (!user) return (
     <div className="h-screen bg-[#060a16] flex flex-col items-center justify-center p-10 text-white text-center">
@@ -139,18 +160,26 @@ export default function App() {
           <div className="p-6">
             <div className="bg-[#11172b] rounded-3xl p-4 flex items-center gap-3 border border-white/5">
               <Search className="text-green-500/50" size={18} />
-              <input placeholder="Search encrypted frequencies..." className="bg-transparent outline-none text-xs w-full" />
+              <input 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search name or phone number..." 
+                className="bg-transparent outline-none text-xs w-full" 
+              />
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 space-y-3 pb-24">
-            {users.map(u => (
+            {filteredUsers.map(u => (
               <div key={u.uid} onClick={() => setSelectedUser(u)} className="flex items-center gap-4 p-4 bg-[#11172b]/80 rounded-[28px] border border-white/5 active:scale-95 transition-all">
-                <img src={u.photoURL} className="w-14 h-14 rounded-2xl object-cover" />
+                <div className="relative">
+                  <img src={u.photoURL} className="w-14 h-14 rounded-2xl object-cover" />
+                  {u.status === 'online' && <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-4 border-[#11172b]"></div>}
+                </div>
                 <div className="flex-1">
                   <p className="font-black text-[15px]">{u.displayName}</p>
-                  <p className={`text-[9px] font-black uppercase tracking-widest ${u.status === 'online' ? 'text-green-500' : 'text-slate-500'}`}>
-                    {u.status === 'online' ? 'Active' : `Last seen: ${formatTime(u.lastSeen)}`}
+                  <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">
+                    {u.phoneNumber ? `ID: ${u.phoneNumber}` : "SIGNAL ONLY"}
                   </p>
                 </div>
               </div>
@@ -164,23 +193,41 @@ export default function App() {
            <header className="flex flex-col items-center mb-10 text-center">
               <img src={user.photoURL} className="w-24 h-24 rounded-[35px] border-4 border-green-500/20 mb-4" />
               <h2 className="text-2xl font-black italic tracking-tighter uppercase">{user.displayName}</h2>
-              <p className="text-[9px] font-black text-green-500 tracking-widest uppercase">{userData?.phoneNumber || "NO IDENTITY LINKED"}</p>
+              <div className="flex items-center gap-2 bg-green-500/10 px-4 py-1 rounded-full border border-green-500/20 mt-2">
+                <Phone size={10} className="text-green-500" />
+                <p className="text-[10px] font-black text-green-500 tracking-widest uppercase">{userData?.phoneNumber || "NOT LINKED"}</p>
+              </div>
            </header>
+           
            <div className="space-y-6">
               <div className="p-6 bg-[#11172b] rounded-[30px] border border-white/5">
-                <p className="text-[10px] font-black text-slate-500 uppercase mb-4 text-center tracking-[2px]">Identity Link</p>
-                <div className="flex gap-2">
-                  <input value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)} placeholder="+234..." className="bg-[#060a16] rounded-2xl p-3 border border-white/10 text-xs flex-1 outline-none" />
-                  <button onClick={() => updateDoc(doc(db, "users", user.uid), { phoneNumber: phoneInput })} className="bg-green-600 p-3 rounded-2xl font-black text-[10px] uppercase">Link</button>
+                <div className="flex items-center gap-2 mb-4 justify-center">
+                  <Shield size={14} className="text-green-500" />
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[2px]">Identity Verification</p>
                 </div>
+                <div className="flex gap-2">
+                  <input 
+                    value={phoneInput} 
+                    onChange={(e) => setPhoneInput(e.target.value)} 
+                    placeholder="Enter Phone Number..." 
+                    className="bg-[#060a16] rounded-2xl p-4 border border-white/10 text-xs flex-1 outline-none text-green-500 font-bold" 
+                  />
+                  <button onClick={handleLinkPhone} className="bg-green-600 px-6 rounded-2xl font-black text-[10px] uppercase shadow-lg shadow-green-500/20">Link</button>
+                </div>
+                <p className="text-[8px] text-slate-600 text-center mt-3 uppercase font-bold tracking-tighter italic">This allows others to find your signal via contacts.</p>
               </div>
-              <button onClick={() => setStealthMode(!stealthMode)} className="p-6 w-full rounded-[30px] border border-white/5 bg-[#11172b] flex justify-between items-center">
-                 <p className="font-black text-xs uppercase">Stealth Mode</p>
-                 <div className={`w-10 h-5 rounded-full relative ${stealthMode ? 'bg-green-500' : 'bg-slate-800'}`}>
-                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${stealthMode ? 'right-0.5' : 'left-0.5'}`}></div>
+
+              <button onClick={() => setStealthMode(!stealthMode)} className="p-6 w-full rounded-[30px] border border-white/5 bg-[#11172b] flex justify-between items-center group active:scale-95 transition-all">
+                 <div className="flex items-center gap-3">
+                   <Lock size={18} className={stealthMode ? "text-green-500" : "text-slate-600"} />
+                   <p className="font-black text-xs uppercase">Stealth Mode</p>
+                 </div>
+                 <div className={`w-12 h-6 rounded-full relative transition-colors duration-500 ${stealthMode ? 'bg-green-500' : 'bg-slate-800'}`}>
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ${stealthMode ? 'left-7' : 'left-1'}`}></div>
                  </div>
               </button>
-              <button onClick={() => signOut(auth)} className="w-full p-6 rounded-[30px] bg-red-500/10 text-red-500 font-black uppercase text-xs border border-red-500/10">Terminate Signal</button>
+
+              <button onClick={() => signOut(auth)} className="w-full p-6 rounded-[30px] bg-red-500/10 text-red-500 font-black uppercase text-xs border border-red-500/10 active:bg-red-500 active:text-white transition-all">Terminate Signal</button>
            </div>
         </div>
       )}
