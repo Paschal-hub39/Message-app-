@@ -50,6 +50,54 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const scroll = useRef();
 
+  // --- 💸 LOGIC: PAYSTACK ADD FUNDS ---
+  const handleAddFunds = () => {
+    const amount = prompt("Enter amount to deposit (₦):");
+    if (!amount || isNaN(amount) || amount <= 0) return;
+
+    const handler = window.PaystackPop.setup({
+      key: PAYSTACK_PUBLIC_KEY,
+      email: user.email,
+      amount: amount * 100, // Paystack works in Kobo
+      currency: "NGN",
+      callback: async (response) => {
+        const userRef = doc(db, "users", user.uid);
+        await updateDoc(userRef, {
+          walletBalance: (userData?.walletBalance || 0) + Number(amount)
+        });
+        alert(`Success! ₦${amount} added to your signal wallet.`);
+      },
+      onClose: () => console.log("Payment Cancelled"),
+    });
+    handler.openIframe();
+  };
+
+  // --- 💡 LOGIC: POST TO MARKET HUB ---
+  const handlePostIdea = async () => {
+    if (!newIdea.trim()) return;
+    try {
+      await addDoc(collection(db, "market"), {
+        text: newIdea,
+        authorId: user.uid,
+        authorName: user.displayName,
+        createdAt: serverTimestamp(),
+      });
+      setNewIdea(""); 
+    } catch (e) {
+      console.error("Error posting idea:", e);
+    }
+  };
+
+  // --- 👤 LOGIC: STEALTH TOGGLE ---
+  const toggleStealth = async () => {
+    const newMode = !stealthMode;
+    setStealthMode(newMode);
+    const userRef = doc(db, "users", user.uid);
+    await updateDoc(userRef, { 
+      status: newMode ? "offline" : "online" 
+    });
+  };
+
   useEffect(() => {
     const handleBack = (event) => {
       if (selectedUser) {
@@ -192,7 +240,23 @@ export default function App() {
             <h2 className="text-3xl font-black italic tracking-tighter uppercase">Market Hub</h2>
             <p className="text-[8px] font-black text-green-500 tracking-widest uppercase">Global Money Ideas</p>
           </header>
-          <div className="flex-1 overflow-y-auto px-6 space-y-4 pb-24">
+
+          {/* ADDED: POST IDEA INPUT BOX */}
+          <div className="px-6 py-4 bg-[#0d1225] border-b border-white/5">
+             <div className="bg-[#11172b] rounded-2xl p-3 flex gap-2 border border-green-500/30">
+                <input 
+                  value={newIdea} 
+                  onChange={(e) => setNewIdea(e.target.value)}
+                  placeholder="Share a money idea..." 
+                  className="bg-transparent flex-1 outline-none text-xs px-2"
+                />
+                <button onClick={handlePostIdea} className="bg-green-600 p-2 rounded-xl">
+                  <Send size={16} />
+                </button>
+             </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-6 space-y-4 pb-24 pt-4">
              {marketIdeas.map(idea => (
               <div key={idea.id} className="p-6 bg-[#11172b] rounded-[35px] border border-white/5 shadow-xl">
                 <p className="text-sm font-medium leading-relaxed">{idea.text}</p>
@@ -211,12 +275,24 @@ export default function App() {
            <div className="bg-gradient-to-br from-[#1a2238] to-[#0d1225] p-6 rounded-[35px] border border-white/10 shadow-2xl mb-8 relative">
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Wallet Balance</p>
                 <h3 className="text-3xl font-black text-white mt-1">₦{(userData?.walletBalance || 0).toLocaleString()}</h3>
-                <button className="w-full mt-4 bg-green-600 py-4 rounded-2xl font-black uppercase text-[11px] tracking-widest">Add Funds +</button>
+                
+                {/* ADDED: FUNCTIONAL ADD FUNDS BUTTON */}
+                <button 
+                  onClick={handleAddFunds}
+                  className="w-full mt-4 bg-green-600 py-4 rounded-2xl font-black uppercase text-[11px] tracking-widest active:bg-green-700"
+                >
+                  Add Funds +
+                </button>
            </div>
-           <button onClick={() => setStealthMode(!stealthMode)} className="p-6 w-full rounded-[30px] border border-white/5 bg-[#11172b] flex justify-between items-center transition-all">
+
+           {/* ADDED: FUNCTIONAL STEALTH TOGGLE WITH ANIMATION */}
+           <button onClick={toggleStealth} className="p-6 w-full rounded-[30px] border border-white/5 bg-[#11172b] flex justify-between items-center transition-all">
                <div className="flex items-center gap-3"><Lock size={18}/><p className="font-black text-xs uppercase">Stealth Mode</p></div>
-               <div className={`w-12 h-6 rounded-full transition-colors ${stealthMode ? 'bg-green-500' : 'bg-slate-800'}`}></div>
+               <div className={`w-12 h-6 rounded-full p-1 transition-all duration-300 ${stealthMode ? 'bg-green-500' : 'bg-slate-800'}`}>
+                  <div className={`w-4 h-4 bg-white rounded-full transition-transform duration-300 ${stealthMode ? 'translate-x-6' : 'translate-x-0'}`}></div>
+               </div>
            </button>
+
            <button onClick={() => signOut(auth)} className="mt-6 p-6 w-full rounded-[30px] border border-red-500/20 bg-[#11172b] text-red-500 font-black text-xs uppercase tracking-widest">Logout System</button>
         </div>
       )}
