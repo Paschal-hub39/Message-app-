@@ -8,7 +8,7 @@ import {
 import { 
   Send, MessageSquare, Search, Shield, Zap, Radio, Lock, Smile, Check, CheckCheck, 
   Image as ImageIcon, Phone, Globe, TrendingUp, DollarSign, EyeOff, X, Gift
-} from 'lucide-react'; // Fixed: Changed 'Global' to 'Globe'
+} from 'lucide-react';
 
 // --- 💎 CONFIG & ENCRYPTION ---
 const LOGO_URL = "WA_1775584974117.jpeg";
@@ -23,7 +23,7 @@ const decrypt = (encoded) => {
   } catch (e) { return "🔓 [Secure Signal]"; }
 };
 
-const EMOJI_LIST = ["😂","😎","🥰","😭","🙏","😡","🤣","😌","🤷","😒","💙","😀","😃","😄","😁","😆","😅","😉","😘","😍","😏","😊","🙂","🙃","🥳","🤩","😋","😛","😜","🤪","😔","🥺","🤭","🤫","🤔","🤐","😶","😐","😑","😬","🥱","🤗","😱","🤨","🧐","🙄","😤","😥","😟","🤬","😠","🙁","😕","😰","😨","😧","😦","😮","😫","😣","😖","😳","😲","😯","😵","🥴","🥵","🤢","🥶","🤮","😴","🤑","🤠","😇","🤥","😷","🤕","🤒","🤧","🤓","🤡","💩","😈","👿","👻","💀","👾","👽","⛄","👺","👹","🤖","☠️","🌚","🌞","🌝","💫","⭐","🌟","✨","⚡","💥","💢","🤍","🖤","🤎","💜","💚","💛","🧡","❤️","💘","💝","💖","💗","💓","💞","💕","💌","🗣️","👤","👥","💋","💔","❣️","♥️","💟","👣","💦","🧠","🩸","🦠","🦷","🦴","👀","👍","👎","💪","👏","🙏","💅","🙇","🙋","💁","🙆","🙅","🤷","🤦","🙍","🧘","🤸","🚶","🏃","🧗","🚵","🚴","🤾","⛹️","🤹","🏌️","🏇","🤺","⛷️","🏂","🪂","🧝","🧞","🧚","🧜","🤽","🏊","🚣","🏄","🧙","🧛","🧟","🦸","🦹","🤶","💂","👸","🕵️","👮","👷","👰","🤵","👼","👶","🧒","🧑","🧓","🧔","👯‍♂️","👯","🕺","💃","🕴️","👫","👭","👬","💏","🤱","🤰","💑","🏵️","💮","🌸","🌷","🌺","🥀","🌹","💐","🌻","🌼","🍂","🍁","🍄","🌾","🌿","🌱","🔥","🌀","❄️","🌬️","🌊","🏖️","🏝️","🌄","🌅","🌪️","⚡","☔","💧","🌨️","☁️","🌧️","🌞","☀️","🌤️","⛅","🌥️","🌦️","⛈️","🌩️","🌝","🌚","🌜","🌛","🌙","🌌","🌠","🌫️","🌏","🌎","🌍","🪐"];
+const EMOJI_LIST = ["😂","😎","🥰","😭","🙏","😡","🤣","😌","🤷","😒","💙","😀","😃","😄","😁","😆","😅","😉","😘","😍","😏","😊","🙂","🙃","🥳","🤩","😋","😛","😜","🤪","😔","🥺","🤭","🤫","🤔","🤐","😶","😐","😑","😬","🥱","🤗","😱","🤨","🧐","🙄","😤","😥","😟","🤬","😠","🙁","😕","😰","😨","😧","😦","😮","😫","😣","😖","😳","😲","😯","😵","🥴","🥵","🤢","🥶","🤮","😴","🤑","🤠","😇","🤥","😷","🤕","🤒","🤧","🤓","🤡","💩","😈","👿","👻","💀","👾","👽","⛄","👺","👹","🤖","☠️","🌚","🌞","🌝","💫","⭐","🌟","✨","⚡","💥","💢","🤍","🖤","🤎","💜","💚","💛","🧡","❤️","💘","💝","💖","💗","💓","💞","💕","💌","🗣️","👤","👥","💋","💔","❣️","❤️","💟","👣","💦","🧠","🩸","🦠","🦷","🦴","👀","👍","👎","💪","👏","🙏","💅","🙇","🙋","💁","🙆","🙅","🤷","🤦","🙍","🧘","🤸","🚶","🏃","🧗","🚵","🚴","🤾","⛹️","🤹","🏌️","🏇","🤺","⛷️","🏂","🪂","🧝","🧞","🧚","🧜","🤽","🏊","🚣","🏄","🧙","🧛","🧟","🦸","🦹","🤶","💂","👸","🕵️","👮","👷","👰","🤵","👼","👶","🧒","🧑","🧓","🧔","👯‍♂️","👯","🕺","💃","🕴️","👫","👭","👬","💏","🤱","🤰","💑","🏵️","💮","🌸","🌷","🌺","🥀","🌹","💐","🌻","🌼","🍂","🍁","🍄","🌾","🌿","🌱","🔥","🌀","❄️","🌬️","🌊","🏖️","🏝️","🌄","🌅","🌪️","⚡","☔","💧","🌨️","☁️","🌧️","🌞","☀️","🌤️","⛅","🌥️","🌦️","⛈️","🌩️","🌝","🌚","🌜","🌛","🌙","🌌","🌠","🌫️","🌏","🌎","🌍","🪐"];
 
 const GIF_LIST = [
   "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXZueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueXpueSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlUxc2YM1NC6ny8/giphy.gif",
@@ -35,6 +35,7 @@ const GIF_LIST = [
 export default function App() {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true); // Added for safety
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -68,18 +69,23 @@ export default function App() {
   }, [selectedUser, activeTab]);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => setUser(u || null));
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u || null);
+      if (!u) setIsLoading(false);
+    });
     return () => unsub();
   }, []);
 
   useEffect(() => {
     if (!user) return;
     const userRef = doc(db, "users", user.uid);
-    onSnapshot(userRef, (doc) => {
+    const unsub = onSnapshot(userRef, (doc) => {
       const data = doc.data();
       setUserData(data);
       if (data?.phoneNumber && !phoneInput) setPhoneInput(data.phoneNumber);
+      setIsLoading(false); // Signal received, stop loading
     });
+    
     setDoc(userRef, { 
       status: stealthMode ? "offline" : "online", 
       typing: isTyping,
@@ -88,6 +94,8 @@ export default function App() {
       photoURL: user.photoURL,
       uid: user.uid
     }, { merge: true });
+
+    return () => unsub();
   }, [user, stealthMode, isTyping]);
 
   useEffect(() => {
@@ -126,7 +134,13 @@ export default function App() {
     setNewMessage(""); setKeyboardView("none");
   };
 
-  const formatTime = (ts) => ts ? new Date(ts.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+  // --- 🛡️ SECURE RENDER LOGIC ---
+  if (isLoading) return (
+    <div className="h-screen bg-[#060a16] flex flex-col items-center justify-center text-white">
+      <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p className="text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">Establishing Signal...</p>
+    </div>
+  );
 
   if (!user) return (
     <div className="h-screen bg-[#060a16] flex flex-col items-center justify-center p-10 text-white text-center">
@@ -150,7 +164,6 @@ export default function App() {
             <Radio size={28} className="text-green-500 animate-pulse" />
           </header>
 
-          {/* 🔍 WORKING SEARCH - Filters by Name OR Phone Number */}
           <div className="p-6">
             <div className="bg-[#11172b] rounded-3xl p-4 flex items-center gap-3 border border-white/5">
               <Search className="text-green-500" size={18} />
@@ -191,7 +204,6 @@ export default function App() {
             <h2 className="text-3xl font-black italic tracking-tighter uppercase">Market Hub</h2>
             <p className="text-[8px] font-black text-green-500 tracking-widest uppercase">Global Money Ideas</p>
           </header>
-          {/* Market content here... */}
           <div className="flex-1 overflow-y-auto px-6 space-y-4 pb-24">
              {marketIdeas.map(idea => (
               <div key={idea.id} className="p-6 bg-[#11172b] rounded-[35px] border border-white/5 shadow-xl">
@@ -217,8 +229,9 @@ export default function App() {
            </div>
            <button onClick={() => setStealthMode(!stealthMode)} className="p-6 w-full rounded-[30px] border border-white/5 bg-[#11172b] flex justify-between items-center transition-all">
                <div className="flex items-center gap-3"><Lock size={18}/><p className="font-black text-xs uppercase">Stealth Mode</p></div>
-               <div className={`w-12 h-6 rounded-full ${stealthMode ? 'bg-green-500' : 'bg-slate-800'}`}></div>
+               <div className={`w-12 h-6 rounded-full transition-colors ${stealthMode ? 'bg-green-500' : 'bg-slate-800'}`}></div>
            </button>
+           <button onClick={() => signOut(auth)} className="mt-6 p-6 w-full rounded-[30px] border border-red-500/20 bg-[#11172b] text-red-500 font-black text-xs uppercase tracking-widest">Logout System</button>
         </div>
       )}
 
@@ -242,7 +255,6 @@ export default function App() {
             <div ref={scroll}></div>
           </div>
 
-          {/* ⌨️ EMOJI & GIF KEYBOARD */}
           <div className="p-5 bg-[#0d1225] rounded-t-[40px] shadow-2xl">
             <div className="bg-[#11172b] p-2 flex gap-2 items-center rounded-full border border-white/5 mb-3">
               <button onClick={() => setKeyboardView(keyboardView === 'emoji' ? 'none' : 'emoji')} className="p-2 text-slate-500"><Smile size={22} /></button>
@@ -266,7 +278,7 @@ export default function App() {
         </div>
       )}
 
-      {/* --- 🧭 NAVIGATION BAR (With Labels) --- */}
+      {/* --- 🧭 NAVIGATION BAR --- */}
       {!selectedUser && (
         <nav className="p-4 px-8 bg-[#0d1225] flex justify-between border-t border-white/5 pb-10">
           <button onClick={() => setActiveTab("chats")} className={`flex flex-col items-center gap-1.5 ${activeTab === 'chats' ? 'text-green-500' : 'text-slate-600'}`}>
