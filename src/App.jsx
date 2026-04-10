@@ -35,7 +35,7 @@ const GIF_LIST = [
 export default function App() {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // Added for safety
+  const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -50,7 +50,6 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const scroll = useRef();
 
-  // --- 🧊 NAVIGATION & BACK BUTTON FIX ---
   useEffect(() => {
     const handleBack = (event) => {
       if (selectedUser) {
@@ -79,19 +78,21 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
     const userRef = doc(db, "users", user.uid);
-    const unsub = onSnapshot(userRef, (doc) => {
-      const data = doc.data();
-      setUserData(data);
-      if (data?.phoneNumber && !phoneInput) setPhoneInput(data.phoneNumber);
-      setIsLoading(false); // Signal received, stop loading
+    const unsub = onSnapshot(userRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setUserData(data);
+        if (data?.phoneNumber && !phoneInput) setPhoneInput(data.phoneNumber);
+      }
+      setIsLoading(false);
     });
     
     setDoc(userRef, { 
       status: stealthMode ? "offline" : "online", 
       typing: isTyping,
       lastSeen: serverTimestamp(),
-      displayName: user.displayName,
-      photoURL: user.photoURL,
+      displayName: user?.displayName || "Anonymous",
+      photoURL: user?.photoURL || "",
       uid: user.uid
     }, { merge: true });
 
@@ -134,7 +135,6 @@ export default function App() {
     setNewMessage(""); setKeyboardView("none");
   };
 
-  // --- 🛡️ SECURE RENDER LOGIC ---
   if (isLoading) return (
     <div className="h-screen bg-[#060a16] flex flex-col items-center justify-center text-white">
       <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -153,7 +153,6 @@ export default function App() {
   return (
     <div className="fixed inset-0 bg-[#060a16] text-white flex flex-col overflow-hidden font-sans">
       
-      {/* --- 💬 CHATS TAB --- */}
       {!selectedUser && activeTab === "chats" && (
         <div className="flex-1 flex flex-col overflow-hidden">
           <header className="p-8 flex justify-between items-center bg-[#0d1225]">
@@ -163,32 +162,22 @@ export default function App() {
             </div>
             <Radio size={28} className="text-green-500 animate-pulse" />
           </header>
-
           <div className="p-6">
             <div className="bg-[#11172b] rounded-3xl p-4 flex items-center gap-3 border border-white/5">
               <Search className="text-green-500" size={18} />
-              <input 
-                value={searchQuery} 
-                onChange={(e) => setSearchQuery(e.target.value)} 
-                placeholder="Search name or phone number..." 
-                className="bg-transparent outline-none text-xs w-full" 
-              />
+              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search name or ID..." className="bg-transparent outline-none text-xs w-full" />
               {searchQuery && <X size={16} onClick={() => setSearchQuery("")} className="text-slate-500" />}
             </div>
           </div>
-
           <div className="flex-1 overflow-y-auto px-6 space-y-3 pb-24">
-            {users.filter(u => 
-              u.displayName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-              u.phoneNumber?.includes(searchQuery)
-            ).map(u => (
-              <div key={u.uid} onClick={() => { setSelectedUser(u); window.history.pushState(null, null, ""); }} className="flex items-center gap-4 p-4 bg-[#11172b]/80 rounded-[28px] border border-white/5 active:scale-95 transition-all">
+            {users.filter(u => u.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) || u.phoneNumber?.includes(searchQuery)).map(u => (
+              <div key={u.uid} onClick={() => setSelectedUser(u)} className="flex items-center gap-4 p-4 bg-[#11172b]/80 rounded-[28px] border border-white/5 active:scale-95 transition-all">
                 <div className="relative">
-                  <img src={u.photoURL} className="w-14 h-14 rounded-2xl object-cover" />
+                  <img src={u.photoURL || ""} className="w-14 h-14 rounded-2xl object-cover bg-slate-800" />
                   {u.status === 'online' && <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-4 border-[#11172b]"></div>}
                 </div>
                 <div className="flex-1">
-                  <p className="font-black text-[15px]">{u.displayName}</p>
+                  <p className="font-black text-[15px]">{u.displayName || "Unknown Signal"}</p>
                   <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">{u.phoneNumber ? `ID: ${u.phoneNumber}` : "VORTEX ID ACTIVE"}</p>
                 </div>
               </div>
@@ -197,7 +186,6 @@ export default function App() {
         </div>
       )}
 
-      {/* --- 🌏 MARKET HUB TAB --- */}
       {!selectedUser && activeTab === "market" && (
          <div className="flex-1 flex flex-col overflow-hidden">
           <header className="p-8 bg-[#0d1225]">
@@ -214,14 +202,12 @@ export default function App() {
         </div>
       )}
 
-      {/* --- ⚙️ SYSTEM / WALLET TAB --- */}
       {!selectedUser && activeTab === "settings" && (
         <div className="flex-1 flex flex-col p-8 overflow-y-auto pb-32">
            <header className="flex flex-col items-center mb-8 text-center">
-              <img src={user.photoURL} className="w-24 h-24 rounded-[35px] border-4 border-green-500/20 mb-4 shadow-2xl" />
-              <h2 className="text-2xl font-black italic tracking-tighter uppercase">{user.displayName}</h2>
+              <img src={user?.photoURL || ""} className="w-24 h-24 rounded-[35px] border-4 border-green-500/20 mb-4 shadow-2xl bg-slate-800" />
+              <h2 className="text-2xl font-black italic tracking-tighter uppercase">{user?.displayName || "Signal User"}</h2>
            </header>
-
            <div className="bg-gradient-to-br from-[#1a2238] to-[#0d1225] p-6 rounded-[35px] border border-white/10 shadow-2xl mb-8 relative">
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Wallet Balance</p>
                 <h3 className="text-3xl font-black text-white mt-1">₦{(userData?.walletBalance || 0).toLocaleString()}</h3>
@@ -235,15 +221,13 @@ export default function App() {
         </div>
       )}
 
-      {/* --- 🔒 PRIVATE CHAT VIEW --- */}
       {selectedUser && (
         <div className="fixed inset-0 z-50 bg-[#060a16] flex flex-col">
           <header className="p-4 flex items-center gap-4 border-b border-white/5 bg-[#0d1225]">
             <button onClick={() => setSelectedUser(null)} className="p-2 text-green-500 font-black text-xl">←</button>
-            <img src={selectedUser.photoURL} className="w-10 h-10 rounded-xl" />
-            <h4 className="font-black text-[13px] uppercase truncate">{selectedUser.displayName}</h4>
+            <img src={selectedUser.photoURL || ""} className="w-10 h-10 rounded-xl bg-slate-800" />
+            <h4 className="font-black text-[13px] uppercase truncate">{selectedUser.displayName || "Unknown"}</h4>
           </header>
-
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {messages.map((m) => (
               <div key={m.id} className={`flex flex-col ${m.senderId === user.uid ? 'items-end' : 'items-start'}`}>
@@ -254,7 +238,6 @@ export default function App() {
             ))}
             <div ref={scroll}></div>
           </div>
-
           <div className="p-5 bg-[#0d1225] rounded-t-[40px] shadow-2xl">
             <div className="bg-[#11172b] p-2 flex gap-2 items-center rounded-full border border-white/5 mb-3">
               <button onClick={() => setKeyboardView(keyboardView === 'emoji' ? 'none' : 'emoji')} className="p-2 text-slate-500"><Smile size={22} /></button>
@@ -262,23 +245,16 @@ export default function App() {
               <input value={newMessage} onFocus={() => setIsTyping(true)} onBlur={() => setIsTyping(false)} onChange={(e) => setNewMessage(e.target.value)} placeholder="Send signal..." className="flex-1 bg-transparent py-3 px-2 outline-none text-sm" />
               <button onClick={() => handleSend(newMessage)} className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center"><Send size={20} /></button>
             </div>
-            
             {keyboardView === 'emoji' && (
-              <div className="h-48 overflow-y-auto grid grid-cols-8 gap-2 p-4">
-                {EMOJI_LIST.map((e,i)=><button key={i} onClick={()=>setNewMessage(p=>p+e)} className="text-2xl">{e}</button>)}
-              </div>
+              <div className="h-48 overflow-y-auto grid grid-cols-8 gap-2 p-4">{EMOJI_LIST.map((e,i)=><button key={i} onClick={()=>setNewMessage(p=>p+e)} className="text-2xl">{e}</button>)}</div>
             )}
-
             {keyboardView === 'gif' && (
-              <div className="h-48 overflow-y-auto flex gap-4 p-4">
-                {GIF_LIST.map((g,i)=><img key={i} src={g} onClick={()=>handleSend(g, 'gif')} className="h-40 rounded-xl cursor-pointer" />)}
-              </div>
+              <div className="h-48 overflow-y-auto flex gap-4 p-4">{GIF_LIST.map((g,i)=><img key={i} src={g} onClick={()=>handleSend(g, 'gif')} className="h-40 rounded-xl cursor-pointer" />)}</div>
             )}
           </div>
         </div>
       )}
 
-      {/* --- 🧭 NAVIGATION BAR --- */}
       {!selectedUser && (
         <nav className="p-4 px-8 bg-[#0d1225] flex justify-between border-t border-white/5 pb-10">
           <button onClick={() => setActiveTab("chats")} className={`flex flex-col items-center gap-1.5 ${activeTab === 'chats' ? 'text-green-500' : 'text-slate-600'}`}>
