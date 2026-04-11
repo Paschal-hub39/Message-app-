@@ -3,28 +3,41 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/jpeg" href="/WA_1775584974117.jpeg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
-    <title>Vortex Private Messaging</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <title>Vortex Hub</title>
 
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#0b141a" />
+    
+    <meta name="theme-color" content="#060a16" />
     <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Vortex" />
+    
+    <meta name="application-name" content="Vortex">
+    <meta name="msapplication-TileColor" content="#060a16">
+    <meta name="msapplication-tap-highlight" content="no">
+
     <link rel="apple-touch-icon" href="/WA_1775584974117.jpeg" />
   </head>
-  <body>
+  <body style="background-color: #060a16; margin: 0; padding: 0;">
     <div id="root"></div>
-    
+
     <script src="https://js.paystack.co/v1/inline.js"></script>
-    
+
     <script type="module" src="/src/main.jsx"></script>
 
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('Vortex Service Worker Active'))
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .then(reg => {
+              console.log('Vortex Signal: Service Worker Active');
+              // Forces the SW to update if you change the code
+              reg.update();
+            })
             .catch(err => console.log('Signal Failed', err));
         });
       }
