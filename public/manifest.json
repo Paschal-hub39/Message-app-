@@ -1,21 +1,32 @@
 {
-  "short_name": "VORTEX",
-  "name": "VORTEX Signal Hub",
-  "description": "Encrypted Private Messaging Signal Hub",
+  "short_name": "Vortex",
+  "name": "Paschala Hub",
+  "description": "Vortex Secure Signal & Market Hub",
   "icons": [
     {
       "src": "WA_1775584974117.jpeg",
+      "sizes": "192x192",
       "type": "image/jpeg",
-      "sizes": "192x192"
+      "purpose": "any"
     },
     {
       "src": "WA_1775584974117.jpeg",
+      "sizes": "512x512",
       "type": "image/jpeg",
-      "sizes": "512x512"
+      "purpose": "any"
+    },
+    {
+      "src": "WA_1775584974117.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
     }
   ],
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#060a16",
-  "background_color": "#060a16"
+  "background_color": "#060a16",
+  "orientation": "portrait",
+  "scope": "/",
+  "id": "/"
 }
