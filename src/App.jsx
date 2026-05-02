@@ -45,7 +45,7 @@ export default function App() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [marketIdeas, setMarketIdeas] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
+  const [newMessage, setNewMessage] = useState(""); // ✅ Guaranteed empty start
   const [newIdea, setNewIdea] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [bioInput, setBioInput] = useState("");
@@ -66,7 +66,6 @@ export default function App() {
     return () => unsub();
   }, []);
 
-  // Update Status to Online
   useEffect(() => {
     if (!user) return;
     const userRef = doc(db, "users", user.uid);
@@ -133,7 +132,7 @@ export default function App() {
 
   const handleSend = async (val, type = "text") => {
     const content = val || newMessage;
-    if (!content.trim() || !selectedUser) return;
+    if (!content || !content.trim() || !selectedUser) return;
     const chatId = user.uid > selectedUser.uid ? `${user.uid}_${selectedUser.uid}` : `${selectedUser.uid}_${user.uid}`;
     
     await addDoc(collection(db, "messages"), { 
@@ -147,7 +146,11 @@ export default function App() {
 
     await updateDoc(doc(db, "users", selectedUser.uid, "myContacts", user.uid), { lastInteraction: serverTimestamp(), hasNewMessage: true });
     await updateDoc(doc(db, "users", user.uid, "myContacts", selectedUser.uid), { lastInteraction: serverTimestamp() });
-    setNewMessage(""); setReplyingTo(null); setKeyboardView("none"); setBurnerMode(false);
+    
+    setNewMessage(""); // ✅ Clears input field
+    setReplyingTo(null); 
+    setKeyboardView("none"); 
+    setBurnerMode(false);
   };
 
   const handleVote = async (id, currentVotes) => {
@@ -271,4 +274,4 @@ export default function App() {
               <div className="flex-1 bg-[#11172b] p-3 rounded-2xl border border-white/5 flex items-center"><input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder={burnerMode ? "Burner Signal..." : "Type signal..."} className="flex-1 bg-transparent outline-none text-sm" /><button onClick={() => setKeyboardView(keyboardView === 'gif' ? 'none' : 'gif')} className="p-1 text-slate-500"><Gift size={18}/></button></div>
               <button onClick={() => handleSend()} style={{backgroundColor: themeColor}} className="p-4 rounded-2xl active:scale-90 shadow-lg shadow-black/20"><Send size={20} className="text-[#060a16]"/></button>
             </div>
-            {keyboardView !== 'none' && <div className="h-64 mt-4 overflow-y-auto gr
+            {keyboardView !== 
