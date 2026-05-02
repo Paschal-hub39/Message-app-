@@ -45,7 +45,7 @@ export default function App() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [marketIdeas, setMarketIdeas] = useState([]);
-  const [newMessage, setNewMessage] = useState(""); // ✅ Guaranteed empty start
+  const [newMessage, setNewMessage] = useState("");
   const [newIdea, setNewIdea] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [bioInput, setBioInput] = useState("");
@@ -132,7 +132,7 @@ export default function App() {
 
   const handleSend = async (val, type = "text") => {
     const content = val || newMessage;
-    if (!content || !content.trim() || !selectedUser) return;
+    if (!content.trim() || !selectedUser) return;
     const chatId = user.uid > selectedUser.uid ? `${user.uid}_${selectedUser.uid}` : `${selectedUser.uid}_${user.uid}`;
     
     await addDoc(collection(db, "messages"), { 
@@ -146,11 +146,7 @@ export default function App() {
 
     await updateDoc(doc(db, "users", selectedUser.uid, "myContacts", user.uid), { lastInteraction: serverTimestamp(), hasNewMessage: true });
     await updateDoc(doc(db, "users", user.uid, "myContacts", selectedUser.uid), { lastInteraction: serverTimestamp() });
-    
-    setNewMessage(""); // ✅ Clears input field
-    setReplyingTo(null); 
-    setKeyboardView("none"); 
-    setBurnerMode(false);
+    setNewMessage(""); setReplyingTo(null); setKeyboardView("none"); setBurnerMode(false);
   };
 
   const handleVote = async (id, currentVotes) => {
@@ -175,7 +171,6 @@ export default function App() {
         .burner-glow { box-shadow: 0 0 10px #ef4444; border: 1px solid #ef4444 !important; }
       `}</style>
 
-      {/* CHATS TAB */}
       {!selectedUser && activeTab === "chats" && (
         <div className="flex-1 flex flex-col overflow-hidden">
           <header className="p-8 pt-12 flex justify-between items-center glass border-b border-white/5">
@@ -201,7 +196,6 @@ export default function App() {
         </div>
       )}
 
-      {/* MARKET TAB */}
       {!selectedUser && activeTab === "market" && (
         <div className="flex-1 flex flex-col overflow-hidden">
           <header className="p-8 pt-12 glass border-b border-white/5"><h2 className="text-3xl font-black italic tracking-tighter uppercase">Market Hub</h2></header>
@@ -218,11 +212,9 @@ export default function App() {
         </div>
       )}
 
-      {/* SYSTEM/SETTINGS TAB */}
       {!selectedUser && activeTab === "settings" && (
         <div className="flex-1 flex flex-col p-8 pt-12 overflow-y-auto pb-32">
            <header className="flex flex-col items-center mb-8"><img src={user?.photoURL} style={{borderColor: `${themeColor}33`}} className="w-24 h-24 rounded-[35px] border-4 mb-4" /><h2 className="text-2xl font-black italic uppercase">{user?.displayName}</h2></header>
-           
            <div className="space-y-4">
              <div className="bg-[#11172b] p-6 rounded-[35px] border border-white/10 shadow-2xl">
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2"><User size={12}/> Profile Signal</p>
@@ -230,7 +222,6 @@ export default function App() {
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2"><Shield size={12}/> VORTEX ID</p>
                 <div className="flex gap-2"><input value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)} className="bg-[#060a16] p-4 rounded-2xl flex-1 outline-none text-xs font-bold" /><button onClick={async () => { await updateDoc(doc(db, "users", user.uid), { phoneNumber: phoneInput, bio: bioInput }); alert("System Updated."); }} style={{backgroundColor: themeColor}} className="px-6 rounded-2xl font-black text-[10px] uppercase">Sync</button></div>
              </div>
-
              <div className="bg-[#11172b] p-6 rounded-[35px] border border-white/10">
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2"><Palette size={12}/> UI Frequency</p>
                 <div className="flex justify-between">
@@ -240,12 +231,10 @@ export default function App() {
                 </div>
              </div>
            </div>
-
            <button onClick={() => signOut(auth)} className="p-6 w-full rounded-[30px] border border-red-500/20 bg-[#11172b] text-red-500 font-black text-xs uppercase tracking-widest mt-10">Logout System</button>
         </div>
       )}
 
-      {/* CHAT VIEW */}
       {selectedUser && (
         <div className="fixed inset-0 z-50 bg-[#060a16] flex flex-col">
           <header className="p-4 pt-10 glass border-b border-white/5 flex items-center gap-4"><button onClick={() => setSelectedUser(null)} style={{color: themeColor}} className="font-bold p-2">←</button><img src={selectedUser.photoURL} className="w-10 h-10 rounded-xl" /><div><h4 className="text-[12px] font-black uppercase">{selectedUser.displayName}</h4><p style={{color: themeColor}} className="text-[7px] font-black tracking-widest uppercase">ENCRYPTED SIGNAL</p></div></header>
@@ -274,4 +263,30 @@ export default function App() {
               <div className="flex-1 bg-[#11172b] p-3 rounded-2xl border border-white/5 flex items-center"><input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder={burnerMode ? "Burner Signal..." : "Type signal..."} className="flex-1 bg-transparent outline-none text-sm" /><button onClick={() => setKeyboardView(keyboardView === 'gif' ? 'none' : 'gif')} className="p-1 text-slate-500"><Gift size={18}/></button></div>
               <button onClick={() => handleSend()} style={{backgroundColor: themeColor}} className="p-4 rounded-2xl active:scale-90 shadow-lg shadow-black/20"><Send size={20} className="text-[#060a16]"/></button>
             </div>
-            {keyboardView !== 
+            {keyboardView !== 'none' && (
+              <div className="h-64 mt-4 overflow-y-auto grid grid-cols-8 gap-2 p-4 bg-[#0d1225] rounded-3xl border border-white/5">
+                {keyboardView === 'emoji' 
+                                   ? EMOJI_LIST.map((e, i) => (
+                      <button key={i} onClick={() => { setNewMessage(p => p + e); setKeyboardView('none'); }} className="text-2xl hover:scale-125 transition-transform">{e}</button>
+                    )) 
+                  : GIF_LIST.map((g, i) => (
+                      <img key={i} src={g} onClick={() => handleSend(g, 'gif')} className="h-24 w-full object-cover rounded-xl" alt="gif" />
+                    ))
+                }
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* FOOTER NAV */}
+      {!selectedUser && (
+        <nav className="p-6 px-10 glass flex justify-between items-center pb-12 border-t border-white/5">
+          <button onClick={() => setActiveTab("chats")} className={`flex flex-col items-center gap-1 ${activeTab === 'chats' ? 'text-green-500' : 'text-slate-600'}`} style={{color: activeTab === 'chats' ? themeColor : ''}}><MessageSquare size={22} /><span className="text-[8px] font-black uppercase">Signals</span></button>
+          <button onClick={() => setActiveTab("market")} className={`flex flex-col items-center gap-1 ${activeTab === 'market' ? 'text-green-500' : 'text-slate-600'}`} style={{color: activeTab === 'market' ? themeColor : ''}}><Radio size={22} /><span className="text-[8px] font-black uppercase">Market</span></button>
+          <button onClick={() => setActiveTab("settings")} className={`flex flex-col items-center gap-1 ${activeTab === 'settings' ? 'text-green-500' : 'text-slate-600'}`} style={{color: activeTab === 'settings' ? themeColor : ''}}><Shield size={22} /><span className="text-[8px] font-black uppercase">System</span></button>
+        </nav>
+      )}
+    </div>
+  );
+}
