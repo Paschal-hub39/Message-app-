@@ -283,53 +283,76 @@ export default function App() {
             {replyingTo && <div className="flex items-center justify-between p-3 bg-white/5 rounded-2xl mb-2 animate-pop border-l-4" style={{borderColor: themeColor}}><div className="text-[10px] truncate"><p className="font-bold">Replying to Signal</p><p className="opacity-60">{decrypt(replyingTo.text)}</p></div><button onClick={() => setReplyingTo(null)} className="p-1"><X size={16}/></button></div>}
             
             <div className="bg-[#11172b] rounded-[24px] p-2 flex items-center gap-2 border border-white/10">
-              <button onClick={() => se// ... continuing from <button onClick={() => se
-                setKeyboardView(keyboardView === 'emoji' ? 'none' : 'emoji')} 
-                className={`p-3 rounded-2xl transition-all h-[52px] w-[52px] flex items-center justify-center shrink-0 bg-[#11172b] text-slate-400`}>
-                <Smile size={20} />
-              </button>
+              <button onClick={() => setBurnerMode(!burnerMode)} 
+  className={`p-2 rounded-xl transition-all ${burnerMode ? 'text-red-500' : 'text-slate-400'}`}>
+  <Zap size={18}/>
+</button>
 
-              <div className="flex-1 bg-[#11172b] p-3 rounded-2xl border border-white/5 flex items-center h-[52px]">
-                <input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder={burnerMode ? "Burner Signal..." : "Type signal..."}
-                  className="flex-1 bg-transparent outline-none text-sm text-white"
-                />
-                <button 
-                  onClick={() => setKeyboardView(keyboardView === 'gif' ? 'none' : 'gif')}
-                  className="p-1 text-slate-500"
-                >
-                  <Gift size={18} />
-                </button>
-              </div>
+<button onClick={() => setKeyboardView(keyboardView === 'emoji' ? 'none' : 'emoji')} 
+  className="text-slate-400">
+  <Smile size={18}/>
+</button>
 
-              <button
-                onClick={() => handleSend()}
-                style={{ backgroundColor: themeColor }}
-                className="p-4 rounded-2xl active:scale-90 shadow-lg shadow-black/20 h-[52px] w-[52px] flex items-center justify-center shrink-0"
-              >
-                <Send size={20} className="text-[#060a16]" />
-              </button>
-            </div>
+<input 
+  value={newMessage} 
+  onChange={(e) => setNewMessage(e.target.value)} 
+  placeholder={burnerMode ? "Burner Signal..." : "Share signal..."} 
+  className="bg-transparent flex-1 outline-none text-sm px-2 h-[11px]" 
+/>
 
-            {/* Keyboard View (Emoji/Gif Panel) */}
-            {keyboardView !== 'none' && (
-              <div className="h-64 mt-4 overflow-y-auto grid grid-cols-8 gap-2 p-4 bg-[#0d1225] rounded-3xl border border-white/5">
-                {keyboardView === 'emoji' ? (
-                  /* Map your emojis here */
-                  <span>✨</span> 
-                ) : (
-                  /* Map your gifs here */
-                  <span>🎬</span>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+<button onClick={() => setKeyboardView(keyboardView === 'gif' ? 'none' : 'gif')} 
+  className="p-1 text-slate-500">
+  <Gift size={18}/>
+</button>
 
-export default App;
+<button 
+  onClick={() => handleSend()} 
+  style={{backgroundColor: themeColor}} 
+  className="p-2 rounded-xl h-[40px] w-[40px] flex items-center justify-center shrink-0 active:scale-90"
+>
+  <Send size={18} className="text-[#060a16]" />
+</button>
+</div>
+
+{keyboardView !== 'none' && (
+  <div className="h-61 mt-1 overflow-y-auto grid grid-cols-8 gap-2 p-4 bg-[#0d1225] rounded-3xl border border-white/5">
+    {keyboardView === 'emoji' ? (
+      EMOJI_LIST.map((e, i) => (
+        <button key={i} onClick={() => { setNewMessage(p => p + e); setKeyboardView('none'); }} 
+          className="text-2xl hover:scale-125 transition-transform">
+          {e}
+        </button>
+      ))
+    ) : (
+      GIF_LIST.map((g, i) => (
+        <img key={i} src={g} onClick={() => handleSend(g, 'gif')} 
+          className="h-24 w-full object-cover rounded-xl" alt="gif" />
+      ))
+    )}
+  </div>
+)}
+</div>
+</div>
+)}
+
+{selectedUser && (
+  <nav className="p-6 px-10 glass flex justify-between items-center pb-12 border-t border-white/5 fixed bottom-0 left-0 right-0">
+    <button onClick={() => setActiveTab('chats')} 
+      style={{color: activeTab === 'chats' ? themeColor : '#475569'}} 
+      className="flex flex-col items-center gap-1">
+      <MessageSquare size={22} /><span className="text-[8px] font-black uppercase">Signals</span>
+    </button>
+    
+    <button onClick={() => setActiveTab('market')} 
+      style={{color: activeTab === 'market' ? themeColor : '#475569'}} 
+      className="flex flex-col items-center gap-1">
+      <Radio size={22} /><span className="text-[8px] font-black uppercase">Market</span>
+    </button>
+    
+    <button onClick={() => setActiveTab('settings')} 
+      style={{color: activeTab === 'settings' ? themeColor : '#475569'}} 
+      className="flex flex-col items-center gap-1">
+      <Shield size={22} /><span className="text-[8px] font-black uppercase">System</span>
+    </button>
+  </nav>
+)}
