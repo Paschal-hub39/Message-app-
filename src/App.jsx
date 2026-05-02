@@ -134,7 +134,7 @@ export default function App() {
       }
       setIsLoading(false);
     });
-    
+
     setDoc(userRef, { 
       status: stealthMode ? "offline" : "online", 
       typing: isTyping,
@@ -200,7 +200,7 @@ export default function App() {
 
   return (
     <div className="fixed inset-0 bg-[#060a16] text-white flex flex-col overflow-hidden font-sans">
-      
+
       {!selectedUser && activeTab === "chats" && (
         <div className="flex-1 flex flex-col overflow-hidden">
           <header className="p-8 flex justify-between items-center bg-[#0d1225]">
@@ -275,7 +275,7 @@ export default function App() {
            <div className="bg-gradient-to-br from-[#1a2238] to-[#0d1225] p-6 rounded-[35px] border border-white/10 shadow-2xl mb-8 relative">
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Wallet Balance</p>
                 <h3 className="text-3xl font-black text-white mt-1">₦{(userData?.walletBalance || 0).toLocaleString()}</h3>
-                
+
                 {/* ADDED: FUNCTIONAL ADD FUNDS BUTTON */}
                 <button 
                   onClick={handleAddFunds}
