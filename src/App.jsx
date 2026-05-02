@@ -354,7 +354,10 @@ export default function App() {
       className="flex flex-col items-center gap-1">
       <Shield size={22} /><span className="text-[8px] font-black uppercase">System</span>
     </button>
-  </nav>
-)}
+          </nav>
+      )}
+    </div>
+  );
+};
 
-export default App
+export default App;
