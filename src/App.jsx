@@ -50,70 +50,36 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const scroll = useRef();
 
-  // --- 💸 LOGIC: PAYSTACK ADD FUNDS ---
   const handleAddFunds = () => {
     const amount = prompt("Enter amount to deposit (₦):");
     if (!amount || isNaN(amount) || amount <= 0) return;
-
     const handler = window.PaystackPop.setup({
       key: PAYSTACK_PUBLIC_KEY,
       email: user.email,
-      amount: amount * 100, // Paystack works in Kobo
+      amount: amount * 100,
       currency: "NGN",
       callback: async (response) => {
         const userRef = doc(db, "users", user.uid);
-        await updateDoc(userRef, {
-          walletBalance: (userData?.walletBalance || 0) + Number(amount)
-        });
-        alert(`Success! ₦${amount} added to your signal wallet.`);
-      },
-      onClose: () => console.log("Payment Cancelled"),
+        await updateDoc(userRef, { walletBalance: (userData?.walletBalance || 0) + Number(amount) });
+        alert(`Success! ₦${amount} added.`);
+      }
     });
     handler.openIframe();
   };
 
-  // --- 💡 LOGIC: POST TO MARKET HUB ---
   const handlePostIdea = async () => {
     if (!newIdea.trim()) return;
-    try {
-      await addDoc(collection(db, "market"), {
-        text: newIdea,
-        authorId: user.uid,
-        authorName: user.displayName,
-        createdAt: serverTimestamp(),
-      });
-      setNewIdea(""); 
-    } catch (e) {
-      console.error("Error posting idea:", e);
-    }
+    await addDoc(collection(db, "market"), {
+      text: newIdea, authorId: user.uid, authorName: user.displayName, createdAt: serverTimestamp(),
+    });
+    setNewIdea(""); 
   };
 
-  // --- 👤 LOGIC: STEALTH TOGGLE ---
   const toggleStealth = async () => {
     const newMode = !stealthMode;
     setStealthMode(newMode);
-    const userRef = doc(db, "users", user.uid);
-    await updateDoc(userRef, { 
-      status: newMode ? "offline" : "online" 
-    });
+    await updateDoc(doc(db, "users", user.uid), { status: newMode ? "offline" : "online" });
   };
-
-  useEffect(() => {
-    const handleBack = (event) => {
-      if (selectedUser) {
-        event.preventDefault();
-        setSelectedUser(null);
-        window.history.pushState(null, null, window.location.pathname);
-      } else if (activeTab !== "chats") {
-        event.preventDefault();
-        setActiveTab("chats");
-        window.history.pushState(null, null, window.location.pathname);
-      }
-    };
-    window.history.pushState(null, null, window.location.pathname);
-    window.addEventListener('popstate', handleBack);
-    return () => window.removeEventListener('popstate', handleBack);
-  }, [selectedUser, activeTab]);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -126,7 +92,7 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
     const userRef = doc(db, "users", user.uid);
-    const unsub = onSnapshot(userRef, (docSnap) => {
+    return onSnapshot(userRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         setUserData(data);
@@ -134,17 +100,16 @@ export default function App() {
       }
       setIsLoading(false);
     });
+  }, [user]);
 
-    setDoc(userRef, { 
+  useEffect(() => {
+    if (!user) return;
+    setDoc(doc(db, "users", user.uid), { 
       status: stealthMode ? "offline" : "online", 
-      typing: isTyping,
-      lastSeen: serverTimestamp(),
+      typing: isTyping, lastSeen: serverTimestamp(),
       displayName: user?.displayName || "Anonymous",
-      photoURL: user?.photoURL || "",
-      uid: user.uid
+      photoURL: user?.photoURL || "", uid: user.uid
     }, { merge: true });
-
-    return () => unsub();
   }, [user, stealthMode, isTyping]);
 
   useEffect(() => {
@@ -155,12 +120,6 @@ export default function App() {
   }, [user]);
 
   useEffect(() => {
-    if (!user || activeTab !== "market") return;
-    const qMarket = query(collection(db, "market"), orderBy("createdAt", "desc"), limit(50));
-    return onSnapshot(qMarket, (s) => setMarketIdeas(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-  }, [user, activeTab]);
-
-  useEffect(() => {
     if (!user || !selectedUser) return;
     const chatId = user.uid > selectedUser.uid ? `${user.uid}_${selectedUser.uid}` : `${selectedUser.uid}_${user.uid}`;
     const qMsg = query(collection(db, "messages"), where("chatId", "==", chatId), orderBy("createdAt", "asc"));
@@ -169,6 +128,12 @@ export default function App() {
       scroll.current?.scrollIntoView({ behavior: 'smooth' });
     });
   }, [user, selectedUser]);
+
+  useEffect(() => {
+    if (!user || activeTab !== "market") return;
+    const qMarket = query(collection(db, "market"), orderBy("createdAt", "desc"), limit(50));
+    return onSnapshot(qMarket, (s) => setMarketIdeas(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+  }, [user, activeTab]);
 
   const handleSend = async (val, type = "text") => {
     const content = val || newMessage;
@@ -181,6 +146,12 @@ export default function App() {
       createdAt: serverTimestamp(), seen: false 
     });
     setNewMessage(""); setKeyboardView("none");
+  };
+
+  const handleSetPhone = async () => {
+    if(!phoneInput.trim()) return;
+    await updateDoc(doc(db, "users", user.uid), { phoneNumber: phoneInput });
+    alert("VORTEX ID Linked!");
   };
 
   if (isLoading) return (
@@ -200,21 +171,16 @@ export default function App() {
 
   return (
     <div className="fixed inset-0 bg-[#060a16] text-white flex flex-col overflow-hidden font-sans">
-
       {!selectedUser && activeTab === "chats" && (
         <div className="flex-1 flex flex-col overflow-hidden">
           <header className="p-8 flex justify-between items-center bg-[#0d1225]">
-            <div>
-              <h2 className="text-4xl font-black italic tracking-tighter uppercase">VORTEX</h2>
-              <p className="text-[8px] font-black text-green-500 tracking-widest mt-1 uppercase">Signal Active</p>
-            </div>
+            <div><h2 className="text-4xl font-black italic tracking-tighter uppercase">VORTEX</h2><p className="text-[8px] font-black text-green-500 tracking-widest mt-1 uppercase">Signal Active</p></div>
             <Radio size={28} className="text-green-500 animate-pulse" />
           </header>
           <div className="p-6">
             <div className="bg-[#11172b] rounded-3xl p-4 flex items-center gap-3 border border-white/5">
               <Search className="text-green-500" size={18} />
-              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search name or ID..." className="bg-transparent outline-none text-xs w-full" />
-              {searchQuery && <X size={16} onClick={() => setSearchQuery("")} className="text-slate-500" />}
+              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search Number or Name..." className="bg-transparent outline-none text-xs w-full" />
             </div>
           </div>
           <div className="flex-1 overflow-y-auto px-6 space-y-3 pb-24">
@@ -226,7 +192,7 @@ export default function App() {
                 </div>
                 <div className="flex-1">
                   <p className="font-black text-[15px]">{u.displayName || "Unknown Signal"}</p>
-                  <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">{u.phoneNumber ? `ID: ${u.phoneNumber}` : "VORTEX ID ACTIVE"}</p>
+                  <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">{u.phoneNumber ? `ID: ${u.phoneNumber}` : "VORTEX ID PENDING"}</p>
                 </div>
               </div>
             ))}
@@ -236,32 +202,15 @@ export default function App() {
 
       {!selectedUser && activeTab === "market" && (
          <div className="flex-1 flex flex-col overflow-hidden">
-          <header className="p-8 bg-[#0d1225]">
-            <h2 className="text-3xl font-black italic tracking-tighter uppercase">Market Hub</h2>
-            <p className="text-[8px] font-black text-green-500 tracking-widest uppercase">Global Money Ideas</p>
-          </header>
-
-          {/* ADDED: POST IDEA INPUT BOX */}
+          <header className="p-8 bg-[#0d1225]"><h2 className="text-3xl font-black italic tracking-tighter uppercase">Market Hub</h2></header>
           <div className="px-6 py-4 bg-[#0d1225] border-b border-white/5">
              <div className="bg-[#11172b] rounded-2xl p-3 flex gap-2 border border-green-500/30">
-                <input 
-                  value={newIdea} 
-                  onChange={(e) => setNewIdea(e.target.value)}
-                  placeholder="Share a money idea..." 
-                  className="bg-transparent flex-1 outline-none text-xs px-2"
-                />
-                <button onClick={handlePostIdea} className="bg-green-600 p-2 rounded-xl">
-                  <Send size={16} />
-                </button>
+                <input value={newIdea} onChange={(e) => setNewIdea(e.target.value)} placeholder="Share a money idea..." className="bg-transparent flex-1 outline-none text-xs px-2" />
+                <button onClick={handlePostIdea} className="bg-green-600 p-2 rounded-xl"><Send size={16} /></button>
              </div>
           </div>
-
           <div className="flex-1 overflow-y-auto px-6 space-y-4 pb-24 pt-4">
-             {marketIdeas.map(idea => (
-              <div key={idea.id} className="p-6 bg-[#11172b] rounded-[35px] border border-white/5 shadow-xl">
-                <p className="text-sm font-medium leading-relaxed">{idea.text}</p>
-              </div>
-            ))}
+             {marketIdeas.map(idea => <div key={idea.id} className="p-6 bg-[#11172b] rounded-[35px] border border-white/5 shadow-xl"><p className="text-sm font-medium leading-relaxed">{idea.text}</p></div>)}
           </div>
         </div>
       )}
@@ -272,28 +221,26 @@ export default function App() {
               <img src={user?.photoURL || ""} className="w-24 h-24 rounded-[35px] border-4 border-green-500/20 mb-4 shadow-2xl bg-slate-800" />
               <h2 className="text-2xl font-black italic tracking-tighter uppercase">{user?.displayName || "Signal User"}</h2>
            </header>
-           <div className="bg-gradient-to-br from-[#1a2238] to-[#0d1225] p-6 rounded-[35px] border border-white/10 shadow-2xl mb-8 relative">
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Wallet Balance</p>
-                <h3 className="text-3xl font-black text-white mt-1">₦{(userData?.walletBalance || 0).toLocaleString()}</h3>
-
-                {/* ADDED: FUNCTIONAL ADD FUNDS BUTTON */}
-                <button 
-                  onClick={handleAddFunds}
-                  className="w-full mt-4 bg-green-600 py-4 rounded-2xl font-black uppercase text-[11px] tracking-widest active:bg-green-700"
-                >
-                  Add Funds +
-                </button>
+           
+           <div className="bg-gradient-to-br from-[#1a2238] to-[#0d1225] p-6 rounded-[35px] border border-white/10 shadow-2xl mb-6">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Link Your Phone (VORTEX ID)</p>
+                <div className="flex gap-2">
+                  <input value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)} placeholder="Enter Number..." className="bg-[#060a16] p-4 rounded-2xl flex-1 outline-none text-xs font-bold" />
+                  <button onClick={handleSetPhone} className="bg-green-600 px-6 rounded-2xl font-black text-[10px] uppercase">Link</button>
+                </div>
            </div>
 
-           {/* ADDED: FUNCTIONAL STEALTH TOGGLE WITH ANIMATION */}
-           <button onClick={toggleStealth} className="p-6 w-full rounded-[30px] border border-white/5 bg-[#11172b] flex justify-between items-center transition-all">
-               <div className="flex items-center gap-3"><Lock size={18}/><p className="font-black text-xs uppercase">Stealth Mode</p></div>
-               <div className={`w-12 h-6 rounded-full p-1 transition-all duration-300 ${stealthMode ? 'bg-green-500' : 'bg-slate-800'}`}>
-                  <div className={`w-4 h-4 bg-white rounded-full transition-transform duration-300 ${stealthMode ? 'translate-x-6' : 'translate-x-0'}`}></div>
-               </div>
-           </button>
+           <div className="bg-gradient-to-br from-[#1a2238] to-[#0d1225] p-6 rounded-[35px] border border-white/10 shadow-2xl mb-8">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Signal Wallet</p>
+                <h3 className="text-3xl font-black text-white mt-1">₦{(userData?.walletBalance || 0).toLocaleString()}</h3>
+                <button onClick={handleAddFunds} className="w-full mt-4 bg-green-600 py-4 rounded-2xl font-black uppercase text-[11px] tracking-widest">Add Funds +</button>
+           </div>
 
-           <button onClick={() => signOut(auth)} className="mt-6 p-6 w-full rounded-[30px] border border-red-500/20 bg-[#11172b] text-red-500 font-black text-xs uppercase tracking-widest">Logout System</button>
+           <button onClick={toggleStealth} className="p-6 w-full rounded-[30px] border border-white/5 bg-[#11172b] flex justify-between items-center mb-4">
+               <div className="flex items-center gap-3"><Lock size={18}/><p className="font-black text-xs uppercase">Stealth Mode</p></div>
+               <div className={`w-12 h-6 rounded-full p-1 transition-all ${stealthMode ? 'bg-green-500' : 'bg-slate-800'}`}><div className={`w-4 h-4 bg-white rounded-full transition-transform ${stealthMode ? 'translate-x-6' : 'translate-x-0'}`}></div></div>
+           </button>
+           <button onClick={() => signOut(auth)} className="p-6 w-full rounded-[30px] border border-red-500/20 bg-[#11172b] text-red-500 font-black text-xs uppercase tracking-widest">Logout System</button>
         </div>
       )}
 
@@ -302,7 +249,7 @@ export default function App() {
           <header className="p-4 flex items-center gap-4 border-b border-white/5 bg-[#0d1225]">
             <button onClick={() => setSelectedUser(null)} className="p-2 text-green-500 font-black text-xl">←</button>
             <img src={selectedUser.photoURL || ""} className="w-10 h-10 rounded-xl bg-slate-800" />
-            <h4 className="font-black text-[13px] uppercase truncate">{selectedUser.displayName || "Unknown"}</h4>
+            <div><h4 className="font-black text-[13px] uppercase truncate">{selectedUser.displayName}</h4><p className="text-[7px] text-green-500 font-black uppercase tracking-widest">{selectedUser.status === 'online' ? 'Signal Live' : 'Encrypted'}</p></div>
           </header>
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {messages.map((m) => (
@@ -321,27 +268,17 @@ export default function App() {
               <input value={newMessage} onFocus={() => setIsTyping(true)} onBlur={() => setIsTyping(false)} onChange={(e) => setNewMessage(e.target.value)} placeholder="Send signal..." className="flex-1 bg-transparent py-3 px-2 outline-none text-sm" />
               <button onClick={() => handleSend(newMessage)} className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center"><Send size={20} /></button>
             </div>
-            {keyboardView === 'emoji' && (
-              <div className="h-48 overflow-y-auto grid grid-cols-8 gap-2 p-4">{EMOJI_LIST.map((e,i)=><button key={i} onClick={()=>setNewMessage(p=>p+e)} className="text-2xl">{e}</button>)}</div>
-            )}
-            {keyboardView === 'gif' && (
-              <div className="h-48 overflow-y-auto flex gap-4 p-4">{GIF_LIST.map((g,i)=><img key={i} src={g} onClick={()=>handleSend(g, 'gif')} className="h-40 rounded-xl cursor-pointer" />)}</div>
-            )}
+            {keyboardView === 'emoji' && <div className="h-48 overflow-y-auto grid grid-cols-8 gap-2 p-4">{EMOJI_LIST.map((e,i)=><button key={i} onClick={()=>setNewMessage(p=>p+e)} className="text-2xl">{e}</button>)}</div>}
+            {keyboardView === 'gif' && <div className="h-48 overflow-y-auto flex gap-4 p-4">{GIF_LIST.map((g,i)=><img key={i} src={g} onClick={()=>handleSend(g, 'gif')} className="h-40 rounded-xl cursor-pointer" />)}</div>}
           </div>
         </div>
       )}
 
       {!selectedUser && (
         <nav className="p-4 px-8 bg-[#0d1225] flex justify-between border-t border-white/5 pb-10">
-          <button onClick={() => setActiveTab("chats")} className={`flex flex-col items-center gap-1.5 ${activeTab === 'chats' ? 'text-green-500' : 'text-slate-600'}`}>
-            <MessageSquare size={22} /><span className="text-[8px] font-black uppercase tracking-widest">Signals</span>
-          </button>
-          <button onClick={() => setActiveTab("market")} className={`flex flex-col items-center gap-1.5 ${activeTab === 'market' ? 'text-green-500' : 'text-slate-600'}`}>
-            <Globe size={22} /><span className="text-[8px] font-black uppercase tracking-widest">Market</span>
-          </button>
-          <button onClick={() => setActiveTab("settings")} className={`flex flex-col items-center gap-1.5 ${activeTab === 'settings' ? 'text-green-500' : 'text-slate-600'}`}>
-            <Shield size={22} /><span className="text-[8px] font-black uppercase tracking-widest">System</span>
-          </button>
+          <button onClick={() => setActiveTab("chats")} className={`flex flex-col items-center gap-1.5 ${activeTab === 'chats' ? 'text-green-500' : 'text-slate-600'}`}><MessageSquare size={22} /><span className="text-[8px] font-black uppercase tracking-widest">Signals</span></button>
+          <button onClick={() => setActiveTab("market")} className={`flex flex-col items-center gap-1.5 ${activeTab === 'market' ? 'text-green-500' : 'text-slate-600'}`}><Globe size={22} /><span className="text-[8px] font-black uppercase tracking-widest">Market</span></button>
+          <button onClick={() => setActiveTab("settings")} className={`flex flex-col items-center gap-1.5 ${activeTab === 'settings' ? 'text-green-500' : 'text-slate-600'}`}><Shield size={22} /><span className="text-[8px] font-black uppercase tracking-widest">System</span></button>
         </nav>
       )}
     </div>
