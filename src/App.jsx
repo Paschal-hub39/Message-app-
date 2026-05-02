@@ -261,25 +261,33 @@ export default function App() {
               <button onClick={() => setBurnerMode(!burnerMode)} className={`p-3 rounded-2xl transition-all h-[52px] w-[52px] flex items-center justify-center shrink-0 ${burnerMode ? 'bg-red-500 text-white' : 'bg-[#11172b] text-slate-400'}`}><Zap size={20}/></button>
               <button onClick={() => setKeyboardView(keyboardView === 'emoji' ? 'none' : 'emoji')} className="p-3 bg-[#11172b] rounded-2xl text-slate-400 h-[52px] w-[52px] flex items-center justify-center shrink-0"><Smile size={20}/></button>
               <div className="flex-1 bg-[#11172b] p-3 rounded-2xl border border-white/5 flex items-center h-[52px]"><input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder={burnerMode ? "Burner Signal..." : "Type signal..."} className="flex-1 bg-transparent outline-none text-sm" /><button onClick={() => setKeyboardView(keyboardView === 'gif' ? 'none' : 'gif')} className="p-1 text-slate-500"><Gift size={18}/></button></div>
-              <button onClick={() => handleSend()} style={{backgroundColor: themeColor}} className="rounded-2xl active:scale-90 shadow-lg shadow-black/20 h-[52px] w-[52px] flex items-center justify-center shrink-0"><Send size={20} className="size={20} />
-          </button>
-        </div>
-
-        {keyboardView !== 'none' && (
-          <div className="h-64 mt-4 overflow-y-auto grid grid-cols-8 gap-2 p-4 bg-[#0d1225] rounded-3xl border border-white/5">
-            {keyboardView === 'emoji' && (
-              /* Add your emoji mapping here */
-              <p className="text-slate-400 text-center col-span-8">Emoji Keyboard</p>
-            )}
-            {keyboardView === 'gif' && (
-              /* Add your gif integration here */
-              <p className="text-slate-400 text-center col-span-8">GIF Keyboard</p>
+              <button onClick={() => handleSend()} style={{backgroundColor: themeColor}} className="rounded-2xl active:scale-90 shadow-lg shadow-black/20 h-[52px] w-[52px] flex items-center justify-center shrink-0"><Send size={20} className="text-[#060a16]"/>
+              </button>
+            </div>
+            {keyboardView !== 'none' && (
+              <div className="h-64 mt-4 overflow-y-auto grid grid-cols-8 gap-2 p-4 bg-[#0d1225] rounded-3xl border border-white/5">
+                {keyboardView === 'emoji' 
+                                   ? EMOJI_LIST.map((e, i) => (
+                      <button key={i} onClick={() => { setNewMessage(p => p + e); setKeyboardView('none'); }} className="text-2xl hover:scale-125 transition-transform">{e}</button>
+                    )) 
+                  : GIF_LIST.map((g, i) => (
+                      <img key={i} src={g} onClick={() => handleSend(g, 'gif')} className="h-24 w-full object-cover rounded-xl" alt="gif" />
+                    ))
+                }
+              </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* FOOTER NAV */}
+      {!selectedUser && (
+        <nav className="p-6 px-10 glass flex justify-between items-center pb-12 border-t border-white/5">
+          <button onClick={() => setActiveTab("chats")} className={`flex flex-col items-center gap-1 ${activeTab === 'chats' ? 'text-green-500' : 'text-slate-600'}`} style={{color: activeTab === 'chats' ? themeColor : ''}}><MessageSquare size={22} /><span className="text-[8px] font-black uppercase">Signals</span></button>
+          <button onClick={() => setActiveTab("market")} className={`flex flex-col items-center gap-1 ${activeTab === 'market' ? 'text-green-500' : 'text-slate-600'}`} style={{color: activeTab === 'market' ? themeColor : ''}}><Radio size={22} /><span className="text-[8px] font-black uppercase">Market</span></button>
+          <button onClick={() => setActiveTab("settings")} className={`flex flex-col items-center gap-1 ${activeTab === 'settings' ? 'text-green-500' : 'text-slate-600'}`} style={{color: activeTab === 'settings' ? themeColor : ''}}><Shield size={22} /><span className="text-[8px] font-black uppercase">System</span></button>
+        </nav>
+      )}
     </div>
   );
-};
-
-export default App;
+}
