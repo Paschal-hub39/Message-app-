@@ -9,7 +9,7 @@ import {
   Send, MessageSquare, Search, Shield, Zap, Radio, Lock, Smile, Check, CheckCheck, 
   Image as ImageIcon, Phone, Globe, TrendingUp, DollarSign, EyeOff, X, Gift
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } firom 'framer-motion';
 
 // --- CONFIG & ENCRYPTION (unchanged) ---
 const LOGO_URL = "WA_1775584974117.jpeg";
