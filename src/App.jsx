@@ -356,3 +356,5 @@ export default function App() {
     </button>
   </nav>
 )}
+
+export default App
