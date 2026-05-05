@@ -11,8 +11,10 @@ import {
   Send, MessageSquare, Search, Shield, Radio, Lock, Smile, X, Gift, Plus, 
   Bell, ChevronRight, Flame, Zap, Palette, User, Clock, Trash2, Reply, 
   Heart, Star, Crown, Sparkles, Ghost, Moon, Sun, Pin, Bookmark, Copy,
-  Eye, EyeOff, Hash, Trophy, TrendingUp, Dice5, Gamepad2, BarChart3, Users
+  Eye, EyeOff, Hash, Trophy, TrendingUp, Users, Type, Volume2,
+  Gamepad2, Dice5
 } from 'lucide-react';
+
 // --- CONFIG ---
 const LOGO_URL = "WA_1775584974117.jpeg";
 const HUB_SECRET_KEY = "VORTEX_SECURE_SIGNAL_992";
@@ -568,7 +570,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Quick Actions */}
           <div className="px-6 pb-4 flex gap-2 overflow-x-auto scrollbar-hide">
             <button onClick={() => setShowNotes(true)} className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#11172b] border border-white/5 text-[10px] font-bold uppercase whitespace-nowrap hover:border-white/20 transition-colors">
               <Bookmark size={12}/> Notes
@@ -577,11 +578,10 @@ export default function App() {
               <Trophy size={12}/> Challenge
             </button>
             <button onClick={() => setActiveTab("leaderboard")} className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#11172b] border border-white/5 text-[10px] font-bold uppercase whitespace-nowrap hover:border-white/20 transition-colors">
-              <BarChart3 size={12}/> Rank #{userRank}
+              <TrendingUp size={12}/> Rank #{userRank}
             </button>
           </div>
 
-          {/* Daily Challenge Banner */}
           {dailyChallenge && (
             <div className="mx-6 mb-4 p-3 rounded-2xl bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 flex items-center gap-3 animate-pop">
               <Flame size={16} className="text-orange-400"/>
@@ -624,58 +624,13 @@ export default function App() {
           </div>
         </div>
       )}
-      {!selectedUser && activeTab === "market" && (
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <header className="p-8 pt-12 glass border-b border-white/5">
-            <h2 className="text-3xl font-black italic tracking-tighter uppercase">Market Hub</h2>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1 flex items-center gap-1">
-              <TrendingUp size={10}/> {marketIdeas.length} Ideas • {marketIdeas.reduce((a,b) => a + (b.votes||0), 0)} Total Votes
-            </p>
-          </header>
-          <div className="p-6">
-            <div className="bg-[#11172b] rounded-2xl p-3 flex gap-2 border border-white/10">
-              <input value={newIdea} onChange={(e) => setNewIdea(e.target.value)} 
-                placeholder="Share idea..." className="bg-transparent flex-1 outline-none text-xs px-2 text-white" />
-              <button onClick={async () => { 
-                if (!newIdea.trim()) return; 
-                await addDoc(collection(db, "market"), { 
-                  text: newIdea, authorId: user.uid, authorName: user.displayName,
-                  createdAt: serverTimestamp(), votes: 0, voters: [] 
-                }); 
-                setNewIdea(""); 
-                await updateDoc(doc(db, "users", user.uid), { xp: increment(10) });
-              }} style={{backgroundColor: themeColor}} 
-                className="p-2 rounded-xl h-[40px] w-[40px] flex items-center justify-center shrink-0 active:scale-90 transition-transform">
-                <Send size={16} />
-              </button>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto px-6 space-y-4 pb-32 scrollbar-hide">
-            {marketIdeas.map((idea, idx) => (
-              <div key={idea.id} className="p-6 bg-[#11172b] rounded-[35px] border border-white/5 flex justify-between items-center hover:border-white/10 transition-colors">
-                <div className="flex-1">
-                  <p className="text-sm mb-2">{idea.text}</p>
-                  <div className="flex items-center gap-2 text-[10px] text-slate-500">
-                    <span className="flex items-center gap-1"><User size={10}/> {idea.authorName}</span>
-                    <span>•</span>
-                    <span>{idea.votes || 0} votes</span>
-                  </div>
-                </div>
-                <button onClick={() => handleVote(idea.id, idea.votes)} 
-                  className="flex flex-col items-center gap-1 ml-4 bg-white/5 p-3 rounded-2xl hover:bg-white/10 transition-colors active:scale-90">
-                  <Flame size={16} className={idea.votes > 0 ? "text-orange-500" : "text-white/20"} />
-                  <span className="text-[10px] font-black">{idea.votes || 0}</span>
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
       {!selectedUser && activeTab === "leaderboard" && (
         <div className="flex-1 flex flex-col overflow-hidden">
           <header className="p-8 pt-12 glass border-b border-white/5">
             <h2 className="text-3xl font-black italic tracking-tighter uppercase">Leaderboard</h2>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Top Signal Operators</p>
+            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1 flex items-center gap-1">
+              <Trophy size={10}/> Top Signal Operators
+            </p>
           </header>
           <div className="flex-1 overflow-y-auto px-6 space-y-4 pb-32 scrollbar-hide pt-6">
             {leaderboard.map((u, idx) => (
@@ -712,22 +667,20 @@ export default function App() {
               </div>
             </div>
             <h2 className="text-2xl font-black italic uppercase">{user?.displayName}</h2>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">{xpPoints || 0} XP • {badges.length} Badges</p>
+            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">{xpPoints || 0} XP • {(badges || []).length} Badges</p>
             
-            {/* Badges */}
             <div className="flex gap-2 mt-3 flex-wrap justify-center">
-              {badges.map((badge, i) => (
+              {(badges || []).map((badge, i) => (
                 <span key={i} className="px-3 py-1 rounded-full text-[8px] font-black uppercase border"
                   style={{borderColor: themeColor, color: themeColor}}>
                   {badge}
                 </span>
               ))}
-              {badges.length === 0 && <span className="text-[10px] text-slate-600">No badges yet</span>}
+              {(badges || []).length === 0 && <span className="text-[10px] text-slate-600">No badges yet</span>}
             </div>
           </header>
           
           <div className="space-y-4">
-            {/* Profile */}
             <div className="bg-[#11172b] p-6 rounded-[35px] border border-white/10 shadow-2xl">
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
                 <User size={12}/> Profile Signal
@@ -752,7 +705,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Themes */}
             <div className="bg-[#11172b] p-6 rounded-[35px] border border-white/10">
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <Palette size={12}/> UI Frequency
@@ -767,39 +719,40 @@ export default function App() {
               </div>
             </div>
 
-            {/* Preferences */}
             <div className="bg-[#11172b] p-6 rounded-[35px] border border-white/10">
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Preferences</p>
               <div className="space-y-3">
-                <button onClick={toggleSound} className="w-full flex items-center justify-between p-3 rounded-2xl bg-[#060a16]">
+                <button onClick={() => setSoundEnabled(!soundEnabled)} className="w-full flex items-center justify-between p-3 rounded-2xl bg-[#060a16]">
                   <span className="text-xs flex items-center gap-2"><Volume2 size={14}/> Sound Effects</span>
                   <div className={`w-10 h-5 rounded-full transition-colors ${soundEnabled ? 'bg-green-500' : 'bg-slate-700'}`}>
                     <div className={`w-5 h-5 rounded-full bg-white transition-transform ${soundEnabled ? 'translate-x-5' : 'translate-x-0'}`}/>
                   </div>
                 </button>
-                <button onClick={toggleNotifications} className="w-full flex items-center justify-between p-3 rounded-2xl bg-[#060a16]">
+                <button onClick={() => setNotificationsEnabled(!notificationsEnabled)} className="w-full flex items-center justify-between p-3 rounded-2xl bg-[#060a16]">
                   <span className="text-xs flex items-center gap-2"><Bell size={14}/> Notifications</span>
                   <div className={`w-10 h-5 rounded-full transition-colors ${notificationsEnabled ? 'bg-green-500' : 'bg-slate-700'}`}>
                     <div className={`w-5 h-5 rounded-full bg-white transition-transform ${notificationsEnabled ? 'translate-x-5' : 'translate-x-0'}`}/>
                   </div>
                 </button>
-                <button onClick={toggleAnimation} className="w-full flex items-center justify-between p-3 rounded-2xl bg-[#060a16]">
+                <button onClick={() => setMessageAnimations(!messageAnimations)} className="w-full flex items-center justify-between p-3 rounded-2xl bg-[#060a16]">
                   <span className="text-xs flex items-center gap-2"><Sparkles size={14}/> Animations</span>
                   <div className={`w-10 h-5 rounded-full transition-colors ${messageAnimations ? 'bg-green-500' : 'bg-slate-700'}`}>
                     <div className={`w-5 h-5 rounded-full bg-white transition-transform ${messageAnimations ? 'translate-x-5' : 'translate-x-0'}`}/>
                   </div>
                 </button>
-                <button onClick={cycleFontSize} className="w-full flex items-center justify-between p-3 rounded-2xl bg-[#060a16]">
+                <button onClick={() => {
+                  const sizes = ["small", "medium", "large"];
+                  setFontSize(sizes[(sizes.indexOf(fontSize) + 1) % sizes.length]);
+                }} className="w-full flex items-center justify-between p-3 rounded-2xl bg-[#060a16]">
                   <span className="text-xs flex items-center gap-2"><Type size={14}/> Font Size: {fontSize}</span>
                   <ChevronRight size={14} className="text-slate-500"/>
                 </button>
               </div>
             </div>
 
-            {/* Stats */}
             <div className="bg-[#11172b] p-6 rounded-[35px] border border-white/10">
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <BarChart3 size={12}/> Signal Analytics
+                <TrendingUp size={12}/> Signal Analytics
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-2xl bg-[#060a16] text-center">
