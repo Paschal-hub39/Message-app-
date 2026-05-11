@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { auth, db, googleProvider } from './firebase';
-import { signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth';
+import { signInWithPopup, signInWithRedirect, onAuthStateChanged, signOut } from 'firebase/auth';
 import { 
   collection, addDoc, query, orderBy, onSnapshot, where, 
   serverTimestamp, setDoc, doc, updateDoc, limit, getDocs, 
