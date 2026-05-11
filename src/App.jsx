@@ -618,7 +618,7 @@ export default function App() {
           </div>
         </div>
       )}
-            {!selectedUser && activeTab === "leaderboard" && (
+      {!selectedUser && activeTab === "leaderboard" && (
         <div className="flex-1 flex flex-col overflow-hidden">
           <header className="p-8 pt-12 glass border-b border-white/5">
             <h2 className="text-3xl font-black italic tracking-tighter uppercase">Leaderboard</h2>
@@ -647,8 +647,7 @@ export default function App() {
           </div>
         </div>
       )}
-      
-            {!selectedUser && activeTab === "settings" && (
+      {!selectedUser && activeTab === "settings" && (
         <div className="flex-1 flex flex-col p-8 pt-12 overflow-y-auto pb-32 scrollbar-hide">
           <header className="flex flex-col items-center mb-8">
             <div className="relative">
@@ -784,7 +783,7 @@ export default function App() {
           </button>
         </div>
       )}
-                                                                               {selectedUser && (
+      {selectedUser && (
         <div className="fixed inset-0 z-50 bg-[#060a16] flex flex-col">
           {/* Header */}
           <header className="p-4 pt-10 glass border-b border-white/5 flex items-center gap-4">
@@ -979,7 +978,8 @@ export default function App() {
             )}
           </div>
         </div>
-      )}      {/* FOOTER NAV */}
+      )}
+      {/* FOOTER NAV */}
       {!selectedUser && (
         <nav className="p-6 px-10 glass flex justify-between items-center pb-12 border-t border-white/5">
           <button onClick={() => setActiveTab("chats")} 
@@ -1011,5 +1011,3 @@ export default function App() {
     </div>
   );
 }
-
-                                                                                                   
