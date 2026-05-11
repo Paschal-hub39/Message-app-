@@ -465,7 +465,7 @@ export default function App() {
         VORTEX
       </h1>
       <p className="text-xs text-slate-500 uppercase tracking-[0.3em] mb-12">Secure Signal Protocol</p>
-      <button onClick={() => signInWithPopup(auth, googleProvider)} 
+      <button onClick={() => signInWithRedirect(auth, googleProvider)}> 
         className="bg-white text-black px-12 py-5 rounded-full font-black uppercase hover:scale-105 transition-transform shadow-lg shadow-green-500/20">
         Connect Hub
       </button>
